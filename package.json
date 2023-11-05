@@ -12,14 +12,16 @@
     "build": "qwik build",
     "build.client": "vite build",
     "build.preview": "vite build --ssr src/entry.preview.tsx",
+    "build.server": "vite build -c adapters/cloudflare-pages/vite.config.ts",
     "build.types": "tsc --incremental --noEmit",
-    "deploy": "echo 'Run \"npm run qwik add\" to install a server adapter'",
+    "deploy": "wrangler pages publish ./dist",
     "dev": "vite --mode ssr",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
     "fmt": "prettier --write .",
     "fmt.check": "prettier --check .",
     "lint": "eslint \"src/**/*.ts*\"",
     "preview": "qwik build preview && vite preview --open",
+    "serve": "wrangler pages dev ./dist",
     "start": "vite --open --mode ssr",
     "qwik": "qwik"
   },
@@ -36,6 +38,12 @@
     "typescript": "^5.2.2",
     "undici": "^5.26.0",
     "vite": "^4.4.11",
-    "vite-tsconfig-paths": "^4.2.1"
+    "vite-tsconfig-paths": "^4.2.1",
+    "wrangler": "^3.0.0"
+  },
+  "dependencies": {
+    "@dqbd/tiktoken": "^1.0.7",
+    "init": "link:@dqbd/tiktoken/lite/init",
+    "tiktoken": "link:@dqbd/tiktoken"
   }
 }

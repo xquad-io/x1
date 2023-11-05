@@ -1,15 +1,18 @@
 import { component$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
+import {generateDescription} from '~/services/index'
 
+generateDescription.bind
 export default component$(() => {
   return (
     <>
-      <h1>Hi 👋</h1>
-      <p>
-        Can't wait to see what you build with qwik!
-        <br />
-        Happy coding.
-      </p>
+      <form preventdefault:submit onSubmit$={(e) => {
+        console.log(e.target.description.value)
+
+      }}>
+        <input name="description" placeholder="description"  />
+        <button type="submit">submit</button>
+      </form>
     </>
   );
 });

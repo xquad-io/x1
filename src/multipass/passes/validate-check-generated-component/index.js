@@ -1,9 +1,8 @@
-const path = require("path");
-const fs = require(`fs`);
-const parser = require("@babel/parser");
-const traverse = require("@babel/traverse").default;
-const generator = require("@babel/generator").default;
-const { fixImport } = require(`import-fixer`);
+import { parse } from "@babel/parser";
+import traverse from "@babel/traverse";
+import generator from "@babel/generator";
+import { fixImport } from 'import-fixer';
+import { IMPORTS_LISTS } from "~/utils/meta";
 
 /*
   !
@@ -61,7 +60,7 @@ const ALLOWED_IMPORTS_FRAMEWORK = {
 const REQUIRES_USE_CLIENT_PREFIX = [`next`, `react`];
 
 function _babel_imports_map(code) {
-  const ast = parser.parse(code, {
+  const ast = parse(code, {
     sourceType: "module",
     plugins: [
       "jsx",
@@ -106,7 +105,7 @@ function _babel_imports_map(code) {
 }
 
 function _babel_extract_nodes(code) {
-  const ast = parser.parse(code, {
+  const ast = parse(code, {
     sourceType: "module",
     plugins: ["jsx", "tsx", "typescript", "react"],
     allowJSX: true,
@@ -261,7 +260,7 @@ async function validate(query) {
     __component_code = __component_code.replaceAll(`______________`, `$`);
   }
   try {
-    fs.unlinkSync(__temp_file);
+    // fs.unlinkSync(__temp_file);
   } catch (e) {
     true;
   }
@@ -355,20 +354,15 @@ async function validate(query) {
 
   const imports_lists = {
     //components : _make_imports_list_from_components_library(req.query.framework , req.query.components),
-    components: JSON.parse(
-      fs.readFileSync(
-        `./library/components/${query.framework}/${query.components}/metadata.json`,
-        `utf-8`,
-      ),
-    ).import,
-    icons: [
-      JSON.parse(
-        fs.readFileSync(
-          `./library/icons/${query.icons}/metadata.json`,
-          `utf-8`,
-        ),
-      ).import[query.framework],
-    ],
+    components: IMPORTS_LISTS[query.framework][query.components].import,
+    // icons: [
+    //   JSON.parse(
+    //     fs.readFileSync(
+    //       `./library/icons/${query.icons}/metadata.json`,
+    //       `utf-8`,
+    //     ),
+    //   ).import[query.framework],
+    // ],
     code: _code_imports,
   };
 
@@ -422,7 +416,7 @@ async function validate(query) {
   const allowed_imports_prefixes = [
     ...new Set([
       ...imports_lists.components,
-      ...imports_lists.icons,
+      // ...imports_lists.icons,
       ...ALLOWED_IMPORTS_GENERAL,
       ...ALLOWED_IMPORTS_FRAMEWORK[query.framework],
     ]),
@@ -485,7 +479,6 @@ async function validate(query) {
 }
 
 async function run(req) {
-  console.log("> init : " + __dirname.split(path.sep).slice(-2).join(`/`));
   return await validate({
     framework: req.query.framework,
     components: req.query.components,
@@ -494,7 +487,7 @@ async function run(req) {
   });
 }
 
-module.exports = {
+export {
   run,
   validate, // <---- is used to validate code fix attempts in `validate-fix-generated-component` pass
 };

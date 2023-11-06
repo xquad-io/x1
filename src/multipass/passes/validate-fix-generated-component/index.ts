@@ -1,21 +1,9 @@
-const path = require(`path`);
-const validate_check = require(
-  `../validate-check-generated-component/index.js`,
-).validate;
+import { validate as validate_check } from '../validate-check-generated-component/index.js';
+import { _titleCase, FRAMEWORKS_EXTENSION_MAP, loadTiktoken } from "~/utils/meta";
+import { createOpenAI } from '~/utils/openai.js';
+import { RequestEventBase } from '@builder.io/qwik-city';
+import { RunOptions } from '~/types.js';
 
-const { OpenAI } = require("openai");
-const tiktoken = require("@dqbd/tiktoken");
-const tiktokenEncoder = tiktoken.get_encoding("cl100k_base");
-require("dotenv").config();
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-function _titleCase(str) {
-  return str.replace(/\w\S*/g, function (txt) {
-    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-  });
-}
 
 /*
   returns `component-validation-fix` type , which will be picked by post processing pass
@@ -118,38 +106,32 @@ const ERRORS_MAP = {
   "illegal-imports": error_illegalImports,
 };
 
-const FRAMEWORKS_EXTENSION_MAP = {
-  react: `tsx`,
-  next: `tsx`,
-  svelte: `svelte`,
-};
-
-async function run(req) {
-  console.log("> init : " + __dirname.split(path.sep).slice(-2).join(`/`));
-
-  if (req.pipeline.stages[`component-validation-check`].success) {
+async function run(options: RunOptions, req: RequestEventBase) {
+  const openAI = createOpenAI(req)
+  const tiktokenEncoder = await loadTiktoken() 
+  if (options.pipeline.stages[`component-validation-check`].success) {
     return {
       type: `component-validation-fix`,
       success: true,
-      data: req.pipeline.stages[`component-validation-check`].data,
+      data: options.pipeline.stages[`component-validation-check`].data,
     };
   } else {
     // try to fix code by prompting
 
-    const errors_context_entries = req.pipeline.stages[
+    const errors_context_entries = options.pipeline.stages[
       `component-validation-check`
     ].data.validation_errors.map((_validation_error, _error_idx) => {
       return {
         role: `user`,
         content:
           `# Component Error (${_error_idx + 1}/${
-            req.pipeline.stages[`component-validation-check`].data
+            options.pipeline.stages[`component-validation-check`].data
               .validation_errors.length
           })\n` +
           `---\n` +
           ERRORS_MAP[_validation_error.error]({
             error_data: _validation_error.data,
-            code: req.pipeline.stages[`component-validation-check`].data.code,
+            code: options.pipeline.stages[`component-validation-check`].data.code,
           }),
       };
     });
@@ -167,23 +149,23 @@ async function run(req) {
         role: `system`,
         content:
           `You are an expert at writing ${_titleCase(
-            req.query.framework,
+            options.query.framework,
           )} components and fixing ${_titleCase(
-            req.query.framework,
+            options.query.framework,
           )} code with errors.\n` +
           `Your task is to fix the code of a ${_titleCase(
-            req.query.framework,
+            options.query.framework,
           )} component for a web app, according to the provided detected component errors.\n` +
           `Also, the ${_titleCase(
-            req.query.framework,
+            options.query.framework,
           )} component you write can make use of Tailwind classes for styling.\n` +
           `You will write the full ${_titleCase(
-            req.query.framework,
+            options.query.framework,
           )} component code, which should include all imports.` +
           `The fixed code you generate will be directly written to a .${
-            FRAMEWORKS_EXTENSION_MAP[req.query.framework]
+            FRAMEWORKS_EXTENSION_MAP[options.query.framework]
           } ${_titleCase(
-            req.query.framework,
+            options.query.framework,
           )} component file and used directly in production.`,
       },
       ...errors_context_entries,
@@ -191,24 +173,24 @@ async function run(req) {
         role: `user`,
         content:
           `- Current ${_titleCase(
-            req.query.framework,
+            options.query.framework,
           )} component code which has errors :\n\n` +
           "```" +
-          FRAMEWORKS_EXTENSION_MAP[req.query.framework] +
+          FRAMEWORKS_EXTENSION_MAP[options.query.framework] +
           "\n" +
-          req.pipeline.stages[`component-validation-check`].data.code +
+          options.pipeline.stages[`component-validation-check`].data.code +
           "\n```\n\n" +
           `Rewrite the full code to fix and update the provided ${_titleCase(
-            req.query.framework,
+            options.query.framework,
           )} web component\n` +
           "The full code of the new " +
-          _titleCase(req.query.framework) +
+          _titleCase(options.query.framework) +
           " component that you write will be written directly to a ." +
-          FRAMEWORKS_EXTENSION_MAP[req.query.framework] +
+          FRAMEWORKS_EXTENSION_MAP[options.query.framework] +
           " file inside the " +
-          _titleCase(req.query.framework) +
+          _titleCase(options.query.framework) +
           " project. Make sure all necessary imports are done, and that your full code is enclosed with ```" +
-          FRAMEWORKS_EXTENSION_MAP[req.query.framework] +
+          FRAMEWORKS_EXTENSION_MAP[options.query.framework] +
           " blocks.\n" +
           "Answer with generated code only. DO NOT ADD ANY EXTRA TEXT DESCRIPTION OR COMMENTS BESIDES THE CODE. Your answer contains code only ! component code only !\n" +
           `Important :\n` +
@@ -219,25 +201,20 @@ async function run(req) {
           `- Fix all errors according to the provided errors data\n` +
           `- You are allowed to remove any problematic part of the code and replace it\n` +
           `- Only write the code for the component; Do not write extra code to import it! The code will directly be stored in an individual ${_titleCase(
-            req.query.framework,
-          )} .${FRAMEWORKS_EXTENSION_MAP[req.query.framework]} file !\n\n` +
+            options.query.framework,
+          )} .${FRAMEWORKS_EXTENSION_MAP[options.query.framework]} file !\n\n` +
           `${
-            req.query.framework != "svelte"
+            options.query.framework != "svelte"
               ? "- Very important : Your component should be exported as default !\n"
               : ""
           }` +
           `Fix and write the updated version of the ${_titleCase(
-            req.query.framework,
+            options.query.framework,
           )} component code as the creative genius and ${_titleCase(
-            req.query.framework,
+            options.query.framework,
           )} component genius you are.\n`,
       },
     ];
-
-    const gptPrompt = {
-      model: process.env.OPENAI_MODEL,
-      messages: context,
-    };
 
     console.dir({
       context: context.map((e) => {
@@ -253,22 +230,25 @@ async function run(req) {
     );
 
     let completion = "";
-    const stream = await openai.chat.completions.create({
-      ...gptPrompt,
+    const stream = await openAI.chat.completions.create({
+      model: req.env.get('OPENAI_MODEL')!,
+      messages: context,
       stream: true,
     });
+    const writer = options.stream.getWriter()
     for await (const part of stream) {
       process.stdout.write(part.choices[0]?.delta?.content || "");
       try {
         const chunk = part.choices[0]?.delta?.content || "";
         completion += chunk;
-        req.stream.write(chunk);
+        writer.write(chunk);
       } catch (e) {
         false;
       }
     }
 
-    req.stream.write(`\n`);
+    writer.write(`\n`);
+    writer.releaseLock()
 
     let generated_code = ``;
     let start = false;
@@ -288,9 +268,9 @@ async function run(req) {
     generated_code = generated_code.trim();
 
     const validate_new_code_response = await validate_check({
-      framework: req.query.framework,
-      components: req.query.components,
-      icons: req.query.icons,
+      framework: options.query.framework,
+      components: options.query.components,
+      icons: options.query.icons,
       code: generated_code,
     });
 
@@ -319,6 +299,6 @@ async function run(req) {
   };
 }
 
-module.exports = {
+export {
   run,
 };

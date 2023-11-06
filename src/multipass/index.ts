@@ -1,12 +1,14 @@
+import { ExecutionPass, Pipeline, RunFunction, RunResult } from "~/types.js";
 import PRESETS_MAP from "./presets/index.js";
+import { RequestEventBase } from "@builder.io/qwik-city";
 
 const multipasses = Object.fromEntries(
-  Object.entries(import.meta.glob("./passes/**/index.js", { import: "run",eager: true }))
+  Object.entries(import.meta.glob<RunFunction>("./passes/**/index.{js,ts}", { import: "run",eager: true }))
     .map(([k, v]) => [k.split("/")[2], v]),
 );
 console.log(multipasses);
 
-async function run(options) {
+async function run(options, req: RequestEventBase) {
   /*
     req : {
       stream ,
@@ -16,7 +18,7 @@ async function run(options) {
     }
   */
 
-  /* console.dir({
+  console.dir({
     module: `multipass/run`,
     status: `starting`,
     query: options.query,
@@ -24,23 +26,23 @@ async function run(options) {
     passes: options.passes,
   });
 
-  let execution_multipass = {
+  const pipeline: Pipeline = {
     passes: {},
     stages: {},
   };
   for (let [index, pass] of options.passes.entries()) {
-    console.log(`> pass ${index}/${options.passes.length - 1}`);
-    const response = await require(`./passes/${pass}/index.js`).run({
+    console.log(pass)
+    const response = await multipasses[pass]({
       stream: options.stream,
       query: options.query,
-      pipeline: execution_multipass,
-    });
-    const execution_pass = {
+      pipeline: pipeline,
+    }, req);
+    const execution_pass: ExecutionPass = {
       index,
       response,
     };
-    execution_multipass.passes[pass] = execution_pass;
-    execution_multipass.stages[response.type] = {
+    pipeline.passes[pass] = execution_pass;
+    pipeline.stages[response.type] = {
       success: response.success,
       data: response.data,
     };
@@ -49,7 +51,7 @@ async function run(options) {
   console.dir({
     module: `multipass/run`,
     status: `done`,
-  }); */
+  });
 
   /*
   console.log(
@@ -63,9 +65,9 @@ async function run(options) {
   */
 }
 
-async function preset(options) {
+async function preset(options, req: RequestEventBase) {
   /* req : {stream,preset``,query{...}} */
-  /* console.dir({
+  console.dir({
     module: `multipass/preset`,
     preset: {
       name: options.preset,
@@ -74,16 +76,12 @@ async function preset(options) {
   });
   return await run({
     stream: options.stream,
-    preset: {
-      name: options.preset,
-      description: PRESETS_MAP[options.preset].description,
-    }, // <- for log only
     query: options.query,
     passes: PRESETS_MAP[options.preset].passes,
-  }); */
+  }, req);
 }
 
-export default {
+export {
   preset,
   run,
 };

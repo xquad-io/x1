@@ -1,110 +1,80 @@
-const path = require("path");
-const { OpenAI } = require("openai");
-const tiktoken = require("@dqbd/tiktoken");
-const tiktokenEncoder = tiktoken.get_encoding("cl100k_base");
-require("dotenv").config();
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { createOpenAI } from "~/utils/openai";
+import { _titleCase, FRAMEWORKS_EXTENSION_MAP, loadTiktoken } from "~/utils/meta";
+import { RunOptions } from "~/types";
 
-const FRAMEWORKS_EXTENSION_MAP = {
-  react: `tsx`,
-  next: `tsx`,
-  svelte: `svelte`,
-};
+async function run(options: RunOptions, req: RequestEventBase) {
+  const openAI = createOpenAI(req)
+  const tiktokenEncoder = await loadTiktoken()
 
-function _titleCase(str) {
-  return str.replace(/\w\S*/g, function (txt) {
-    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-  });
-}
-
-async function run(req) {
-  console.log("> init : " + __dirname.split(path.sep).slice(-2).join(`/`));
-
-  const design_task = req.pipeline.stages["component-design-task"].data;
+  const design_task = options.pipeline.stages["component-design-task"].data;
   const context = [
     {
       role: `system`,
       content:
         `You are an expert at writing ${_titleCase(
-          req.query.framework,
+          options.query.framework,
         )} components.\n` +
-        `Your task is to write a new update for the provided ${_titleCase(
-          req.query.framework,
+        `Your task is to write a new ${_titleCase(
+          options.query.framework,
         )} component for a web app, according to the provided task details.\n` +
         `The ${_titleCase(
-          req.query.framework,
+          options.query.framework,
         )} component you write can make use of Tailwind classes for styling.\n` +
         `If you judge it is relevant to do so, you can use library components and icons.\n\n` +
         `You will write the full ${_titleCase(
-          req.query.framework,
+          options.query.framework,
         )} component code, which should include all imports.` +
         `Your generated code will be directly written to a .${
-          FRAMEWORKS_EXTENSION_MAP[req.query.framework]
+          FRAMEWORKS_EXTENSION_MAP[options.query.framework]
         } ${_titleCase(
-          req.query.framework,
+          options.query.framework,
         )} component file and used in production.`,
     },
-    ...req.pipeline.stages[`component-design-context`].data,
+    ...options.pipeline.stages[`component-design-context`].data,
     {
       role: `user`,
       content:
-        `- COMPONENT NAME : ${req.query.component.name}\n\n` +
+        `- COMPONENT NAME : ${design_task.name}\n\n` +
         `- COMPONENT DESCRIPTION :\n` +
-        "```\n" +
-        req.query.component.description +
-        "\n```\n\n" +
-        `- CURRENT COMPONENT CODE :\n\n` +
-        "```" +
-        FRAMEWORKS_EXTENSION_MAP[req.query.framework] +
-        "\n" +
-        req.query.component.code +
-        "\n```\n\n" +
-        `- DESIRED COMPONENT UPDATES :\n\n` +
         "```\n" +
         design_task.description.user +
         "\n```\n\n" +
-        `- additional component update suggestions :\n` +
+        `- additional component suggestions :\n` +
         "```\n" +
         design_task.description.llm +
         "\n```\n\n\n" +
-        `Write the full code for the new, updated ${req.query.framework} web component, which uses Tailwind classes if needed (add tailwind dark: classes too if you can; backgrounds in dark: classes should be black), and optionally, library components and icons, based on the provided design task.\n` +
+        `Write the full code for the new ${options.query.framework} web component, which uses Tailwind classes if needed (add tailwind dark: classes too if you can; backgrounds in dark: classes should be black), and optionally, library components and icons, based on the provided design task.\n` +
         "The full code of the new " +
-        _titleCase(req.query.framework) +
+        _titleCase(options.query.framework) +
         " component that you write will be written directly to a ." +
-        FRAMEWORKS_EXTENSION_MAP[req.query.framework] +
+        FRAMEWORKS_EXTENSION_MAP[options.query.framework] +
         " file inside the " +
-        _titleCase(req.query.framework) +
+        _titleCase(options.query.framework) +
         " project. Make sure all necessary imports are done, and that your full code is enclosed with ```" +
-        FRAMEWORKS_EXTENSION_MAP[req.query.framework] +
+        FRAMEWORKS_EXTENSION_MAP[options.query.framework] +
         " blocks.\n" +
         "Answer with generated code only. DO NOT ADD ANY EXTRA TEXT DESCRIPTION OR COMMENTS BESIDES THE CODE. Your answer contains code only ! component code only !\n" +
         `Important :\n` +
         `- Make sure you import provided components libraries and icons that are provided to you if you use them !\n` +
-        `- Tailwind classes should be written directly in the elements class tags (or className in case of React). DO NOT WRITE ANY CSS OUTSIDE OF CLASSES\n` +
+        `- Tailwind classes should be written directly in the elements class tags (or className in case of React). DO NOT WRITE ANY CSS OUTSIDE OF CLASSES. DO NOT USE ANY <style> IN THE CODE ! CLASSES STYLING ONLY !\n` +
         `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided above !\n` +
-        `- Do not have ANY dynamic data! Components are meant to be working as is without supplying any variable to them when importing them ! Only write a component that render directly with placeholders as data, component not supplied with any dynamic data.\n` +
+        `- DO NOT HAVE ANY DYNAMIC DATA OR DATA PROPS ! Components are meant to be working as is without supplying any variable to them when importing them ! Only write a component that render directly with placeholders as data, component not supplied with any dynamic data.\n` +
+        `- DO NOT HAVE ANY DYNAMIC DATA OR DATA PROPS ! ` +
         `- Only write the code for the component; Do not write extra code to import it! The code will directly be stored in an individual ${_titleCase(
-          req.query.framework,
-        )} .${FRAMEWORKS_EXTENSION_MAP[req.query.framework]} file !\n` +
+          options.query.framework,
+        )} .${FRAMEWORKS_EXTENSION_MAP[options.query.framework]} file !\n` +
         `${
-          req.query.framework != "svelte"
+          options.query.framework != "svelte"
             ? "- Very important : Your component should be exported as default !\n"
             : ""
         }` +
-        `Write the updated version of the ${_titleCase(
-          req.query.framework,
+        `Write the ${_titleCase(
+          options.query.framework,
         )} component code as the creative genius and ${_titleCase(
-          req.query.framework,
+          options.query.framework,
         )} component genius you are - with good ui formatting.\n`,
     },
   ];
-
-  const gptPrompt = {
-    model: process.env.OPENAI_MODEL,
-    messages: context,
-  };
 
   console.dir({
     context: context.map((e) => {
@@ -120,26 +90,29 @@ async function run(req) {
   );
 
   let completion = "";
-  const stream = await openai.chat.completions.create({
-    ...gptPrompt,
+  const stream = await openAI.chat.completions.create({
+    model: req.env.get('OPENAI_MODEL')!,
+    messages: context,
     stream: true,
   });
+  const writer = options.stream.getWriter()
   for await (const part of stream) {
     process.stdout.write(part.choices[0]?.delta?.content || "");
     try {
       const chunk = part.choices[0]?.delta?.content || "";
       completion += chunk;
-      req.stream.write(chunk);
+      writer.write(chunk);
     } catch (e) {
       false;
     }
   }
 
-  req.stream.write(`\n`);
+  writer.write(`\n`);
+  writer.releaseLock()
 
   let generated_code = ``;
   let start = false;
-  for (let l of completion.split("\n")) {
+  for (const l of completion.split("\n")) {
     let skip = false;
     if (
       [
@@ -161,6 +134,6 @@ async function run(req) {
   };
 }
 
-module.exports = {
+export {
   run,
 };

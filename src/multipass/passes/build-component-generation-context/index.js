@@ -1,17 +1,8 @@
-import { init, Tiktoken } from "@dqbd/tiktoken/lite/init";
-import wasmUrl from "~/../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?url";
-import model from "@dqbd/tiktoken/encoders/cl100k_base.json";
-console.log(wasmUrl)
+import { FRAMEWORKS_EXTENSION_MAP, loadTiktoken } from "~/utils/meta";
 
 const RAG = {
   // icons: await import('./rag_icons.js'),
   components: await import('./rag_components.js'),
-};
-
-const FRAMEWORKS_EXTENSION_MAP = {
-  react: `tsx`,
-  next: `tsx`,
-  svelte: `svelte`,
 };
 
 function _titleCase(str) {
@@ -21,14 +12,8 @@ function _titleCase(str) {
 }
 
 async function run(req) {
-  const wasmResponsePromise = fetch(wasmUrl)
-  await init((imports) => WebAssembly.instantiateStreaming(wasmResponsePromise, imports));
-  const tiktokenEncoder = new Tiktoken(
-    model.bpe_ranks,
-    model.special_tokens,
-    model.pat_str
-  );
-  const design_task = {
+  const tiktokenEncoder =  await loadTiktoken()
+    const design_task = {
     components: req.pipeline.stages[`component-design-task`].data.components
       ? req.pipeline.stages[`component-design-task`].data.components
       : [],

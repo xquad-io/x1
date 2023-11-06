@@ -1,8 +1,4 @@
-const path = require("path");
-
 async function run(req) {
-  console.log("> init : " + __dirname.split(path.sep).slice(-2).join(`/`));
-
   if (!req.pipeline.stages[`component`].success) {
     return {
       type: `component-export`,
@@ -11,9 +7,9 @@ async function run(req) {
     };
   }
 
-  const export_response = await require(
-    `./export_${req.query.framework}.js`,
-  ).export_component(req);
+  const export_response = (await import(
+    `./export_${req.query.framework}.js`
+  )).export_component(req);
   return {
     type: `component-export`,
     success: true,
@@ -21,6 +17,6 @@ async function run(req) {
   };
 }
 
-module.exports = {
+export {
   run,
 };

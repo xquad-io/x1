@@ -1,5 +1,3 @@
-const path = require(`path`);
-
 /*
   simple pass through for now; augment later
 
@@ -9,8 +7,6 @@ const path = require(`path`);
 */
 
 async function run(req) {
-  console.log("> init : " + __dirname.split(path.sep).slice(-2).join(`/`));
-
   return {
     type: `component`,
     success: req.pipeline.stages[`component-validation-fix`].success,
@@ -21,6 +17,6 @@ async function run(req) {
   };
 }
 
-module.exports = {
+export {
   run,
 };

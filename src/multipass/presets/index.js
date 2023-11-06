@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   componentNew_description: {
     description: `generate a new component from a text description`,
     passes: [

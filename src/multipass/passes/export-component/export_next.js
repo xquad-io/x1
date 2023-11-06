@@ -1,13 +1,13 @@
-const fs = require(`fs`);
-require("dotenv").config();
+// const fs = require(`fs`);
+// require("dotenv").config();
 
-function _mkdir(path) {
-  try {
-    if (!fs.existsSync(path)) fs.mkdirSync(path, { recursive: true });
-  } catch (e) {
-    true;
-  }
-}
+// function _mkdir(path) {
+//   try {
+//     if (!fs.existsSync(path)) fs.mkdirSync(path, { recursive: true });
+//   } catch (e) {
+//     true;
+//   }
+// }
 
 async function export_component(req) {
   console.dir({
@@ -17,6 +17,6 @@ async function export_component(req) {
     exported: false,
   };
 }
-module.exports = {
+export {
   export_component,
 };

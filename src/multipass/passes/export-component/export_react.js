@@ -1,13 +1,13 @@
-const fs = require(`fs`);
-require("dotenv").config();
+// const fs = require(`fs`);
+// require("dotenv").config();
 
-function _mkdir(path) {
-  try {
-    if (!fs.existsSync(path)) fs.mkdirSync(path, { recursive: true });
-  } catch (e) {
-    true;
-  }
-}
+// function _mkdir(path) {
+//   try {
+//     if (!fs.existsSync(path)) fs.mkdirSync(path, { recursive: true });
+//   } catch (e) {
+//     true;
+//   }
+// }
 
 async function export_component(req) {
   const output_dir = `${
@@ -18,8 +18,8 @@ async function export_component(req) {
   const output_file =
     `${output_dir}/${req.pipeline.stages[`component-design-task`].data.name}_` +
     `${req.pipeline.stages[`component`].data.version}.tsx`;
-  _mkdir(output_dir);
-  fs.writeFileSync(output_file, req.pipeline.stages[`component`].data.code);
+  // _mkdir(output_dir);
+  // fs.writeFileSync(output_file, req.pipeline.stages[`component`].data.code);
   console.dir({
     exported: output_file,
   });
@@ -27,6 +27,6 @@ async function export_component(req) {
     exported: output_file,
   };
 }
-module.exports = {
+export {
   export_component,
 };

@@ -34,9 +34,9 @@ export const files = {
       `,
     },
   },
-  'vite.config.ts': {
-    file:{
-        contents: `
+  "vite.config.ts": {
+    file: {
+      contents: `
         import react from "@vitejs/plugin-react";
         import path from "path";
         import { defineConfig } from "vite";
@@ -50,45 +50,46 @@ export const files = {
             },
           },
         });
-        `
-    } 
+        `,
+    },
   },
-  'tailwind.config.js': {
+  "tailwind.config.js": {
     file: {
-        contents: `
-        import { nextui } from "@nextui-org/react"
+      contents: `
+import {nextui} from '@nextui-org/react'
 
-
-        /** @type {import('tailwindcss').Config} */
-        export default {
-          content: [
-            // ...
-            "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
-          ],
-          theme: {
-            extend: {},
-          },
-          darkMode: "class",
-          plugins: [nextui()]
-        }
-        `
-    }
-
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './App.tsx',
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}'
+  ],
+  theme: {
+    extend: {},
   },
-  'postcss.config.js': {
+  darkMode: "class",
+  plugins: [nextui()],
+}
+        `,
+    },
+  },
+  "postcss.config.js": {
     file: {
-        contents: `
+      contents: `
         export default {
             plugins: {
               tailwindcss: {},
               autoprefixer: {},
             },
           }`,
-        }
     },
-    'main.tsx': {
-        file: {
-            contents: `
+  },
+  "main.tsx": {
+    file: {
+      contents: `
             import React from 'react'
 import ReactDOM from 'react-dom/client'
 import {NextUIProvider} from '@nextui-org/react'
@@ -103,45 +104,148 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   </React.StrictMode>,
 )
 
-            `
-        }
-    }, 
-    'App.tsx': {
-        file: {
-            contents: `
-            function App() {
-                return (
-                  <main className="flex flex-col items-center justify-center min-h-screen space-y-20">
-                    <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
-                      Vite, React, Tailwind minimal starter
-                    </h1>
-                    <a
-                      href="https://github.com/moinulmoin/vite-react-tailwind-starter"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <span className="text-xl hover:underline underline-offset-2">Star on GitHub</span>&nbsp;:)
-                    </a>
-                  </main>
-                );
-              }
-              
-              export default App;
-            `
-        }
+            `,
     },
-    'index.css': {
-        file: {
-            contents: `
+  },
+  "App.tsx": {
+    file: {
+      contents: `
+import React from 'react';
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Button,
+  Progress,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+} from '@nextui-org/react';
+
+export default function DashboardComponent_CJWNM() {
+  return (
+    <div className="dark:bg-black flex flex-col gap-8 p-8 max-w-7xl m-auto">
+      <div className="grid grid-cols-3 gap-6">
+        <Card>
+          <CardHeader className="text-lg font-semibold">Users</CardHeader>
+          <CardBody className="dark:text-white text-3xl">1450</CardBody>
+          <CardFooter>
+            <Button color="primary" auto className="m-auto">
+              More Details
+            </Button>
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardHeader className="text-lg font-semibold">Sales</CardHeader>
+          <CardBody className="dark:text-white text-3xl">$49083</CardBody>
+          <CardFooter>
+            <Button color="primary" auto className="m-auto">
+              More Details
+            </Button>
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardHeader className="text-lg font-semibold">Profit</CardHeader>
+          <CardBody className="dark:text-white text-3xl">$42983</CardBody>
+          <CardFooter>
+            <Button color="primary" auto className="m-auto">
+              More Details
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+      <div className="grid grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="flex justify-between items-center">
+            <span className="text-lg font-semibold">Revenue</span>
+            <Button
+              color="primary"
+              auto
+              onClick={() => console.log('Refreshed')}
+            >
+              Refresh
+            </Button>
+          </CardHeader>
+          <CardBody>
+            <Progress aria-label="Loading.." value={75} color="primary" />
+          </CardBody>
+          <CardFooter>
+            <span className="mb-2 text-lg">75%</span>
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardHeader className="flex justify-between items-center">
+            <span className="text-lg font-semibold">ROI</span>
+            <Button
+              color="primary"
+              auto
+              onClick={() => console.log('Refreshed')}
+            >
+              Refresh
+            </Button>
+          </CardHeader>
+          <CardBody>
+            <Progress aria-label="Loading.." value={90} color="green" />
+          </CardBody>
+          <CardFooter>
+            <span className="mb-2 text-lg">90%</span>
+          </CardFooter>
+        </Card>
+      </div>
+      <Card fluid>
+        <CardHeader className="text-lg font-semibold">Top Products</CardHeader>
+        <Table aria-label="Top Products">
+          <TableHeader>
+            <TableColumn>Product</TableColumn>
+            <TableColumn>Sales</TableColumn>
+            <TableColumn>Stock</TableColumn>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>iPhone 12 Pro Max</TableCell>
+              <TableCell>1023</TableCell>
+              <TableCell>50</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Galaxy S21 Ultra</TableCell>
+              <TableCell>789</TableCell>
+              <TableCell>40</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>PlayStation 5</TableCell>
+              <TableCell>567</TableCell>
+              <TableCell>0</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+        <CardFooter>
+          <Button color="primary" auto className="m-auto">
+            More Details
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
+            `,
+    },
+  },
+  "index.css": {
+    file: {
+      contents: `
             @tailwind base;
             @tailwind components;
             @tailwind utilities;
-            `
-        }
+            `,
     },
-    'index.html': {
-        file: {
-            contents: `
+  },
+  "index.html": {
+    file: {
+      contents: `
             <!doctype html>
 <html lang="en">
 
@@ -157,9 +261,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <script type="module" src="/main.tsx"></script>
 </body>
 
-</html>`
-        }
-    }
+</html>`,
+    },
+  },
 };
 
 // Call only once
@@ -174,7 +278,7 @@ export async function installDependencies() {
       write(data) {
         console.log(data);
       },
-    })
+    }),
   );
   // Wait for install command to exit
   return installProcess.exit;
@@ -189,15 +293,7 @@ export async function startDevServer() {
       write(data) {
         console.log(data);
       },
-    })
+    }),
   );
-  console.log('start', proccess)
-//   return webcontainerInstance
-
-  // Wait for `server-ready` event
-  webcontainerInstance.on('port', (port, _url) => {
-    console.log('loaded')
-      // url = _url
-  });
-  return webcontainerInstance
+  return webcontainerInstance;
 }

@@ -1,4 +1,4 @@
-import { validate as validate_check } from '../validate-check-generated-component/index.js';
+// import { validate as validate_check } from '../validate-check-generated-component/index.js';
 import { _titleCase, FRAMEWORKS_EXTENSION_MAP, loadTiktoken } from "~/utils/meta";
 import { createOpenAI } from '~/utils/openai.js';
 import { RequestEventBase } from '@builder.io/qwik-city';

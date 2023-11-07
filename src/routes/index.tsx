@@ -1,93 +1,141 @@
-import { $, component$, useOnWindow, useSignal, useVisibleTask$ } from "@builder.io/qwik";
-import { server$, type DocumentHead } from "@builder.io/qwik-city";
-import * as multipass from '../multipass/index'
+import {
+  $,
+  component$,
+  NoSerialize,
+  noSerialize,
+  useOnWindow,
+  useSignal,
+  useVisibleTask$,
+} from "@builder.io/qwik";
+import { type DocumentHead, server$ } from "@builder.io/qwik-city";
+import * as multipass from "../multipass/index";
+import { WebContainer } from "@webcontainer/api";
 
-const generateDescription = server$(async function* () {
-    console.log('here')
-    const {writable, readable} = new TransformStream<string, string>()
+const startMarker = "```tsx";
+const endMarker = "```";
 
-    console.log(multipass)
-    multipass.preset({
-      stream: writable,
-      preset: `componentNew_description`,
-      query: {
-          description: "generate a small dashboard component",
-          framework: 'react',
-          components: 'nextui',
-          // icons: req.body.icons,
-      },
-    },this);
+const generateDescription = server$(async function* ({
+  description,
+}: {
+  description: string;
+}) {
+  const { writable, readable } = new TransformStream<string, string>();
+  try {
+    multipass
+      .preset(
+        {
+          stream: writable,
+          preset: `componentNew_description`,
+          query: {
+            description: description,
+            framework: "react",
+            components: "nextui",
+            // icons: req.body.icons,
+          },
+        },
+        this
+      )
+      .then(() => writable.close());
+  } catch {
+    true;
+  }
 
-    const reader = readable.getReader()
-    try {
-        while (true) {
-            const {done, value} = await reader.read()
-            if (done) return
-            yield value
-        }
-    } finally {
-      reader.releaseLock()
-        // writable.getWriter().releaseLock()
+  // this.signal.addEventListener("abort", () => {
+  //   writable.close();
+  // });
+
+  const reader = readable.getReader();
+  try {
+    while (!this.signal.aborted) {
+      const { done, value } = await reader.read();
+      if (done) return;
+      yield value;
     }
-    
-// console.log('here')
+  } finally {
+    !reader.closed && reader.releaseLock();
+    // writable.getWriter().releaseLock()
+  }
 
-// console.log(wasmUrl)
-//     const duplexStream = new PassThrough();
-//     duplexStream.pipe(res);
-//     const generated = await multipass.preset({
-//     stream: duplexStream,
-//     preset: `componentNew_description`,
-//     query: {
-//         description: req.body.description,
-//         framework: req.body.framework,
-//         components: req.body.components,
-//         icons: req.body.icons,
-//     },
-//     });
+  // console.log('here')
 
-})
-
-
+  // console.log(wasmUrl)
+  //     const duplexStream = new PassThrough();
+  //     duplexStream.pipe(res);
+  //     const generated = await multipass.preset({
+  //     stream: duplexStream,
+  //     preset: `componentNew_description`,
+  //     query: {
+  //         description: req.body.description,
+  //         framework: req.body.framework,
+  //         components: req.body.components,
+  //         icons: req.body.icons,
+  //     },
+  //     });
+});
 
 export default component$(() => {
   const urlSignal = useSignal<string>();
+  const text = useSignal("");
+  const wcInstance = useSignal<NoSerialize<WebContainer>>();
+  const code = useSignal("");
+
   // console.log('here', generateDescription())
 
   useVisibleTask$(async () => {
-    console.log('here')
-    const {installDependencies, startDevServer} = await import('~/wc')
+    console.log("here");
+    const { installDependencies, startDevServer } = await import("~/wc");
     const exitCode = await installDependencies();
     if (exitCode !== 0) {
       throw new Error("Installation failed");
     }
-    const webcontainerInstance = await startDevServer()
-    console.log(webcontainerInstance)
+    const webcontainerInstance = await startDevServer();
+    wcInstance.value = noSerialize(webcontainerInstance);
 
-    webcontainerInstance.on('server-ready', (port, url) => {
-      console.log('here', url)
-      urlSignal.value = url
+    webcontainerInstance.on("server-ready", (port, url) => {
+      urlSignal.value = url;
+      wcInstance.value?.fs.writeFile("App.tsx", code.value);
     });
-  })
+  });
   return (
     <>
-      <form preventdefault:submit onSubmit$={async (e) => {
-        console.log(SharedArrayBuffer)
-        const response = await generateDescription()
-        for await (const value of response) {
-          console.log(value)
-        }
-//         setInterval(() => {
-// console.log(response)
+      <form
+        preventdefault:submit
+        onSubmit$={async (e) => {
+          console.log(e?.target.description.value);
+          const response = await generateDescription({
+            description: e?.target.description.value,
+          });
+          for await (const value of response) {
+            text.value += value;
 
-//         }, 30) 
+            const startIndex = text.value.lastIndexOf(startMarker);
+            const endIndex = text.value.lastIndexOf(endMarker);
 
-      }}>
-        <input name="description" placeholder="description"  />
+            if (startIndex !== -1) {
+              code.value = text.value
+                .slice(
+                  startIndex + startMarker.length,
+                  endIndex === -1 || endIndex === startIndex
+                    ? text.value.length - 1
+                    : endIndex
+                )
+                .trim();
+              // wcInstance.value?.fs.writeFile("App.tsx", code.value);
+            }
+          }
+          wcInstance.value?.fs.writeFile("App.tsx", code.value);
+        }}
+      >
+        <input name="description" placeholder="description" />
         <button type="submit">submit</button>
       </form>
-      {urlSignal.value ?<iframe style={{width: '100%'}} src={urlSignal.value}></iframe>:'loading baby' } 
+      {urlSignal.value ? (
+        <iframe style={{ width: "100%" }} src={urlSignal.value}></iframe>
+      ) : (
+        "loading baby"
+      )}
 
+      <code style={{whiteSpace: 'pre-wrap'}}>{code.value}</code>
     </>
   );
 });

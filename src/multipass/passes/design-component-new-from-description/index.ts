@@ -2,11 +2,16 @@ import { RequestEventBase } from "@builder.io/qwik-city";
 import { ChatCompletionMessageParam } from "openai/resources";
 import zodToJsonSchema from "zod-to-json-schema";
 import { RunOptions } from "~/types";
-import { _titleCase, LIBRARY_COMPONENTS_MAP, _randomUid, createComponentsSchema } from "~/utils/meta";
+import {
+  _titleCase,
+  LIBRARY_COMPONENTS_MAP,
+  _randomUid,
+  createComponentsSchema,
+} from "~/utils/meta";
 import { createOpenAI } from "~/utils/openai";
 
 async function run(options: RunOptions, req: RequestEventBase) {
-  const openAI = createOpenAI(req)
+  const openAI = createOpenAI(req);
   const components_schema = createComponentsSchema(options);
 
   const context: ChatCompletionMessageParam[] = [
@@ -21,7 +26,9 @@ async function run(options: RunOptions, req: RequestEventBase) {
       role: `user`,
       content:
         "Multiple library components can be used while creating a new component in order to help you do a better design job, faster.\n\nAVAILABLE LIBRARY COMPONENTS:\n```\n" +
-        LIBRARY_COMPONENTS_MAP[options.query.framework][options.query.components]
+        LIBRARY_COMPONENTS_MAP[options.query.framework][
+          options.query.components
+        ]
           .map((e) => {
             return `${e.name} : ${e.description};`;
           })
@@ -39,9 +46,9 @@ async function run(options: RunOptions, req: RequestEventBase) {
   ];
 
   let completion = "";
-  console.log('here context', context)
+  console.log("here context", context);
   const stream = await openAI.chat.completions.create({
-    model: req.env.get('OPENAI_MODEL')!,
+    model: req.env.get("OPENAI_MODEL")!,
     messages: context,
     functions: [
       {
@@ -52,11 +59,11 @@ async function run(options: RunOptions, req: RequestEventBase) {
     ],
     stream: true,
   });
-  const writer = options.stream.getWriter()
+  const writer = options.stream.getWriter();
   for await (const part of stream) {
     try {
       process.stdout.write(
-        part.choices[0]?.delta?.function_call?.arguments || "",
+        part.choices[0]?.delta?.function_call?.arguments || ""
       );
     } catch (e) {
       false;
@@ -70,7 +77,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
     }
   }
   writer.write(`\n`);
-  writer.releaseLock()
+  writer.releaseLock();
 
   const component_design = {
     ...{
@@ -100,7 +107,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
         )
       ? false
       : component_design.new_component_icons_elements.if_so_what_new_component_icons_elements_are_needed.map(
-          (e) => e.toLowerCase(),
+          (e) => e.toLowerCase()
         ),
     components: !component_design.use_library_components
       ? false
@@ -119,6 +126,4 @@ async function run(options: RunOptions, req: RequestEventBase) {
   };
 }
 
-export {
-  run,
-};
+export { run };

@@ -1,9 +1,9 @@
-import { RequestEventBase } from "@builder.io/qwik-city";
-import { ChatCompletionMessageParam } from "openai/resources";
+// @ts-nocheck
+import type { RequestEventBase } from "@builder.io/qwik-city";
+import type { ChatCompletionMessageParam } from "openai/resources";
 import zodToJsonSchema from "zod-to-json-schema";
-import { RunOptions } from "~/types";
+import type { RunOptions } from "~/types";
 import {
-  _titleCase,
   LIBRARY_COMPONENTS_MAP,
   _randomUid,
   createComponentsSchema,

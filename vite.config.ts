@@ -8,6 +8,10 @@ import wasm from "vite-plugin-wasm";
 export default defineConfig(() => {
   return {
     plugins: [wasm(), qwikCity(), qwikVite(), tsconfigPaths()],
+    build: {
+      target: 'esnext'
+    },
+    // esbuild: {target: },
     preview: {
       headers: {
         "Cache-Control": "public, max-age=600",

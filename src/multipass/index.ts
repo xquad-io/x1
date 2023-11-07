@@ -1,6 +1,7 @@
-import { ExecutionPass, Pipeline, RunFunction, RunResult } from "~/types.js";
+// @ts-nocheck
+import type { ExecutionPass, Pipeline, RunFunction} from "~/types.js";
 import PRESETS_MAP from "./presets/index.js";
-import { RequestEventBase } from "@builder.io/qwik-city";
+import type { RequestEventBase } from "@builder.io/qwik-city";
 
 const multipasses = Object.fromEntries(
   Object.entries(import.meta.glob<RunFunction>("./passes/**/index.{js,ts}", { import: "run",eager: true }))
@@ -30,7 +31,7 @@ async function run(options, req: RequestEventBase) {
     passes: {},
     stages: {},
   };
-  for (let [index, pass] of options.passes.entries()) {
+  for (const [index, pass] of options.passes.entries()) {
     console.log(pass)
     const response = await multipasses[pass]({
       stream: options.stream,

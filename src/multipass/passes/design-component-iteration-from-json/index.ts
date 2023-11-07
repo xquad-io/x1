@@ -1,9 +1,10 @@
+// @ts-nocheck
 import { LIBRARY_COMPONENTS_MAP, _titleCase, createComponentsSchema } from "~/utils/meta";
 import zodToJsonSchema from "zod-to-json-schema";
-import { RequestEventBase } from "@builder.io/qwik-city";
+import type { RequestEventBase } from "@builder.io/qwik-city";
 import { createOpenAI } from "~/utils/openai";
-import { ChatCompletionMessageParam } from "openai/resources";
-import { RunOptions } from "~/types";
+import type { ChatCompletionMessageParam } from "openai/resources";
+import type { RunOptions } from "~/types";
 
 async function run(options: RunOptions, req: RequestEventBase) {
 

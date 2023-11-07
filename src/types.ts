@@ -1,6 +1,4 @@
-import { RequestEventBase } from "@builder.io/qwik-city";
-import exp from "constants";
-
+import type { RequestEventBase } from "@builder.io/qwik-city";
 export type RunResult = {
     type: string;
     success: boolean;

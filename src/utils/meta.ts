@@ -1,4 +1,4 @@
-import { Tiktoken } from "@dqbd/tiktoken/lite";
+import type { Tiktoken } from "@dqbd/tiktoken/lite";
 // import wasm from "~/../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?raw";
 import model from "@dqbd/tiktoken/encoders/cl100k_base.json";
 import { z } from "@builder.io/qwik-city";
@@ -9,28 +9,11 @@ let _tiktokenEncoder: Tiktoken | null = null;
 // console.log(await loadTiktoken())
 // const wasmEncoded = Buffer.from(wasm, 'binary').toString('base64')
 
-function asciiToBinary(str: string) {
-  if (typeof atob === 'function') {
-    // this works in the browser
-    return atob(str)
-  } else {
-    // this works in node
-    return new Buffer(str, 'base64').toString('binary');
-  }
-}
-
-function decode(encoded: string) {
-  const binaryString =  asciiToBinary(encoded);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes.buffer;
-}
 export async function loadTiktoken() {
   if (_tiktokenEncoder) {
     return _tiktokenEncoder
   }
+  const {Tiktoken} = await import('@dqbd/tiktoken/lite')
   // const wasmResponsePromise = fetch(wasmUrl)
   // await init((imports) => WebAssembly.instantiate(Buffer.from(wasm, 'utf8'), imports));
   _tiktokenEncoder = new Tiktoken(
@@ -75,7 +58,7 @@ export function _titleCase(str: string) {
   });
 }
 
-export function createComponentsSchema(options){
+export function createComponentsSchema(options: any){
     return z.object({
         new_component_name: z.string(),
         new_component_description: z.string().describe(

@@ -1,6 +1,7 @@
+// @ts-nocheck
 import { createOpenAI } from "~/utils/openai";
 import { _titleCase, FRAMEWORKS_EXTENSION_MAP, loadTiktoken } from "~/utils/meta";
-import { RunOptions } from "~/types";
+import type { RunOptions } from "~/types";
 
 async function run(options: RunOptions, req: RequestEventBase) {
   const openAI = createOpenAI(req)

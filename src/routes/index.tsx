@@ -1,15 +1,14 @@
+import type {
+  NoSerialize} from "@builder.io/qwik";
 import {
-  $,
   component$,
-  NoSerialize,
   noSerialize,
-  useOnWindow,
   useSignal,
   useVisibleTask$,
 } from "@builder.io/qwik";
 import { type DocumentHead, server$ } from "@builder.io/qwik-city";
 import * as multipass from "../multipass/index";
-import { WebContainer } from "@webcontainer/api";
+import type { WebContainer } from "@webcontainer/api";
 
 const startMarker = "```tsx";
 const endMarker = "```";
@@ -100,7 +99,7 @@ export default component$(() => {
     <>
       <form
         preventdefault:submit
-        onSubmit$={async (e) => {
+        onSubmit$={async (e: any) => {
           console.log(e?.target.description.value);
           const response = await generateDescription({
             description: e?.target.description.value,
@@ -130,7 +129,7 @@ export default component$(() => {
         <button type="submit">submit</button>
       </form>
       {urlSignal.value ? (
-        <iframe style={{ width: "100%" }} src={urlSignal.value}></iframe>
+        <iframe style={{ width: "100%", height: '60vh' }} src={urlSignal.value}></iframe>
       ) : (
         "loading baby"
       )}

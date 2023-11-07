@@ -1,9 +1,5 @@
 import { FRAMEWORKS_EXTENSION_MAP, loadTiktoken } from "~/utils/meta";
 
-const RAG = {
-  // icons: await import('./rag_icons.js'),
-  components: await import('./rag_components.js'),
-};
 
 function _titleCase(str) {
   return str.replace(/\w\S*/g, function (txt) {
@@ -12,6 +8,11 @@ function _titleCase(str) {
 }
 
 async function run(req) {
+const RAG = {
+  // icons: await import('./rag_icons.js'),
+  components: await import('./rag_components.js'),
+};
+
   const tiktokenEncoder =  await loadTiktoken()
     const design_task = {
     components: req.pipeline.stages[`component-design-task`].data.components

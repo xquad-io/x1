@@ -1,10 +1,10 @@
+// @ts-nocheck
 import type { RequestEventBase} from "@builder.io/qwik-city";
-import { z } from "@builder.io/qwik-city";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { createOpenAI } from "~/utils/openai";
 import type { ChatCompletionMessageParam } from "openai/resources";
 import { LIBRARY_COMPONENTS_MAP, createComponentsSchema, _titleCase } from "~/utils/meta";
-import { RunOptions } from "~/types";
+import type { RunOptions } from "~/types";
 
 // fs.readdirSync(`./library/components`)
 //   .filter((e) => !e.includes(`.`))

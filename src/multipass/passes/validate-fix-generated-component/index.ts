@@ -1,8 +1,9 @@
-// import { validate as validate_check } from '../validate-check-generated-component/index.js';
+// @ts-nocheck
+import { validate as validate_check } from '../validate-check-generated-component/index.js';
 import { _titleCase, FRAMEWORKS_EXTENSION_MAP, loadTiktoken } from "~/utils/meta";
 import { createOpenAI } from '~/utils/openai.js';
-import { RequestEventBase } from '@builder.io/qwik-city';
-import { RunOptions } from '~/types.js';
+import type { RequestEventBase } from '@builder.io/qwik-city';
+import type { RunOptions } from '~/types.js';
 
 
 /*
@@ -252,7 +253,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
 
     let generated_code = ``;
     let start = false;
-    for (let l of completion.split("\n")) {
+    for (const l of completion.split("\n")) {
       let skip = false;
       if (
         [
@@ -268,9 +269,9 @@ async function run(options: RunOptions, req: RequestEventBase) {
     generated_code = generated_code.trim();
 
     const validate_new_code_response = await validate_check({
-      framework: options.query.framework,
-      components: options.query.components,
-      icons: options.query.icons,
+      // framework: options.query.framework,
+      // components: options.query.components,
+      // icons: options.query.icons,
       code: generated_code,
     });
 

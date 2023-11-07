@@ -267,10 +267,11 @@ export default function DashboardComponent_CJWNM() {
 };
 
 // Call only once
-export const webcontainerInstance = await WebContainer.boot();
-await webcontainerInstance.mount(files);
+export let webcontainerInstance:WebContainer
 
 export async function installDependencies() {
+  webcontainerInstance = await WebContainer.boot();
+  await webcontainerInstance.mount(files);
   // Install dependencies
   const installProcess = await webcontainerInstance.spawn("npm", ["install"]);
   installProcess.output.pipeTo(

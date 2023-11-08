@@ -32,21 +32,26 @@ async function run(options, req: RequestEventBase) {
     stages: {},
   };
   for (const [index, pass] of options.passes.entries()) {
-    console.log(pass)
-    const response = await multipasses[pass]({
-      stream: options.stream,
-      query: options.query,
-      pipeline: pipeline,
-    }, req);
-    const execution_pass: ExecutionPass = {
-      index,
-      response,
-    };
-    pipeline.passes[pass] = execution_pass;
-    pipeline.stages[response.type] = {
-      success: response.success,
-      data: response.data,
-    };
+    try {
+      console.log('pass', pass)
+      const response = await multipasses[pass]({
+        stream: options.stream,
+        query: options.query,
+        pipeline: pipeline,
+      }, req);
+      console.log('here')
+      const execution_pass: ExecutionPass = {
+        index,
+        response,
+      };
+      pipeline.passes[pass] = execution_pass;
+      pipeline.stages[response.type] = {
+        success: response.success,
+        data: response.data,
+      };
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   console.dir({

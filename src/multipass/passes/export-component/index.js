@@ -7,13 +7,14 @@ async function run(req) {
     };
   }
 
-  const export_response = (await import(
-    `./export_${req.query.framework}.js`
-  )).export_component(req);
+  // const export_response = (await import(
+  //   `./export_${req.query.framework}.js`
+  // )).export_component(req);
   return {
     type: `component-export`,
     success: true,
-    data: export_response,
+    // data: export_response,
+    data: '',
   };
 }
 

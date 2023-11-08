@@ -70,13 +70,6 @@ async function run(options: RunOptions, req: RequestEventBase) {
   const writer = options.stream.getWriter();
   for await (const part of stream) {
     try {
-      process.stdout.write(
-        part.choices[0]?.delta?.function_call?.arguments || "",
-      );
-    } catch (e) {
-      false;
-    }
-    try {
       const chunk = part.choices[0]?.delta?.function_call?.arguments || "";
       completion += chunk;
       writer.write(chunk);
@@ -95,7 +88,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
       new_component_icons_elements: false,
       use_library_components: false,
     },
-    ...eval(`(${completion})`),
+    ...JSON.parse(`${completion}`),
   };
 
   const component_task = {

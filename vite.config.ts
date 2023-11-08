@@ -9,7 +9,11 @@ export default defineConfig(() => {
   return {
     plugins: [wasm(), qwikCity(), qwikVite(), tsconfigPaths()],
     build: {
-      target: 'esnext'
+      target: 'esnext',
+      rollupOptions: {
+        external: ['../../../src/utils/tiktoken_bg.wasm']
+
+      },
     },
     // esbuild: {target: },
     preview: {

@@ -1,26 +1,60 @@
-import type { Tiktoken } from "@dqbd/tiktoken/lite";
+// import wasm from "~/../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?url";
 // import wasm from "~/../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?raw";
+import { init, Tiktoken } from "@dqbd/tiktoken/lite/init";
 import model from "@dqbd/tiktoken/encoders/cl100k_base.json";
-import { z } from "@builder.io/qwik-city";
-console.log(model)
+import { RequestEventBase, z } from "@builder.io/qwik-city";
+// console.log(model)
 
 let _tiktokenEncoder: Tiktoken | null = null;
 // console.log('here', btoa(unescape(encodeURIComponent(wasm))).slice(0, 100));
 // console.log(await loadTiktoken())
 // const wasmEncoded = Buffer.from(wasm, 'binary').toString('base64')
 
-export async function loadTiktoken() {
+// loadTiktoken()
+
+// console.log(wasm)
+export async function loadTiktoken(req: RequestEventBase) {
+  console.log('load tiktoken')
   if (_tiktokenEncoder) {
     return _tiktokenEncoder
   }
-  const {Tiktoken} = await import('@dqbd/tiktoken/lite')
-  // const wasmResponsePromise = fetch(wasmUrl)
-  // await init((imports) => WebAssembly.instantiate(Buffer.from(wasm, 'utf8'), imports));
-  _tiktokenEncoder = new Tiktoken(
-    model.bpe_ranks,
-    model.special_tokens,
-    model.pat_str
-  );
+  try {
+
+
+  // console.log(new URL("tiktoken_bg.wasm", import.meta.url))
+  // const wasm = await fetch(new URL("tiktoken_bg.wasm", req.url.origin)).then((e) => e.arrayBuffer())
+  // console.log(wasm)
+  // const {Tiktoken} = await import('@dqbd/tiktoken/lite/tiktoken_bg')
+  if (import.meta.env.PROD) {
+    const { default: wasm} = await import(/* @vite-ignore */ '../../../src/utils/tiktoken_bg.wasm')
+    await init((imports) => WebAssembly.instantiate(wasm, imports));
+    // const wasmResponsePromise = fetch(wasmUrl)
+    // await init((imports) => WebAssembly.instantiate(Buffer.from(wasm, 'utf8'), imports));
+    _tiktokenEncoder = new Tiktoken(
+      model.bpe_ranks,
+      model.special_tokens,
+      model.pat_str
+    );
+  } else {
+    const {Tiktoken} = await import('@dqbd/tiktoken/lite')
+    _tiktokenEncoder = new Tiktoken(
+      model.bpe_ranks,
+      model.special_tokens,
+      model.pat_str
+    );
+  }
+  
+  // _tiktokenEncoder = get_encoding("cl100k_base");
+
+console.log(req.env.get('CF_PAGES'), _tiktokenEncoder)
+
+  } catch (e) {
+    console.log(e)
+
+  }
+  
+
+  // return _tiktokenEncoder
   return _tiktokenEncoder
 }
 

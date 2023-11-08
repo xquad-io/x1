@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@dqbd/tiktoken": "^1.0.7",
+    "@vespaiach/axios-fetch-adapter": "^0.3.1",
     "@webcontainer/api": "^1.1.8",
     "init": "link:@dqbd/tiktoken/lite/init",
     "openai": "^4.15.4",

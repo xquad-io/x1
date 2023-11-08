@@ -35,8 +35,8 @@ const generateDescription = server$(async function* ({
         this
       )
       .then(() => writable.close());
-  } catch {
-    true;
+  } catch (e) {
+    console.log(e)
   }
 
   // this.signal.addEventListener("abort", () => {
@@ -131,7 +131,7 @@ export default component$(() => {
       {urlSignal.value ? (
         <iframe style={{ width: "100%", height: '60vh' }} src={urlSignal.value}></iframe>
       ) : (
-        "loading baby"
+        "loading webcontainers for results, meanwhile write your description and submit baby"
       )}
 
       <code style={{whiteSpace: 'pre-wrap'}}>{code.value}</code>

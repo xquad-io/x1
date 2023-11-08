@@ -7,7 +7,7 @@ import type { RunOptions } from "~/types";
 
 async function run(options: RunOptions, req: RequestEventBase) {
   const openAI = createOpenAI(req)
-  const tiktokenEncoder = await loadTiktoken()
+  const tiktokenEncoder = await loadTiktoken(req)
 
   const design_task = options.pipeline.stages["component-design-task"].data;
   const context: ChatCompletionMessageParam[] = [
@@ -111,7 +111,6 @@ async function run(options: RunOptions, req: RequestEventBase) {
 
   const writer = options.stream.getWriter()
   for await (const part of stream) {
-    process.stdout.write(part.choices[0]?.delta?.content || "");
     try {
       const chunk = part.choices[0]?.delta?.content || "";
       completion += chunk;

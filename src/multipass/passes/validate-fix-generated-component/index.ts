@@ -109,7 +109,7 @@ const ERRORS_MAP = {
 
 async function run(options: RunOptions, req: RequestEventBase) {
   const openAI = createOpenAI(req)
-  const tiktokenEncoder = await loadTiktoken() 
+  const tiktokenEncoder = await loadTiktoken(req) 
   if (options.pipeline.stages[`component-validation-check`].success) {
     return {
       type: `component-validation-fix`,
@@ -238,7 +238,6 @@ async function run(options: RunOptions, req: RequestEventBase) {
     });
     const writer = options.stream.getWriter()
     for await (const part of stream) {
-      process.stdout.write(part.choices[0]?.delta?.content || "");
       try {
         const chunk = part.choices[0]?.delta?.content || "";
         completion += chunk;

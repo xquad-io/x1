@@ -76,14 +76,21 @@ export default component$(() => {
   const urlSignal = useSignal<string>();
   const text = useSignal("");
   const wcInstance = useSignal<NoSerialize<WebContainer>>();
+  const terminalOutput = useSignal("");
   const code = useSignal("");
 
   // console.log('here', generateDescription())
 
   useVisibleTask$(async () => {
     console.log("here");
+    const stream = new WritableStream({
+      write(data) {
+        console.log(data);
+        terminalOutput.value = data
+      },
+    })
     const { installDependencies, startDevServer } = await import("~/wc");
-    const exitCode = await installDependencies();
+    const exitCode = await installDependencies(stream);
     if (exitCode !== 0) {
       throw new Error("Installation failed");
     }
@@ -135,6 +142,11 @@ export default component$(() => {
       )}
 
       <code style={{whiteSpace: 'pre-wrap'}}>{code.value}</code>
+      
+      <br />
+      <span>terminal:</span>
+      <br />
+      <code style={{whiteSpace: 'pre-wrap'}}>{terminalOutput.value}</code>
     </>
   );
 });

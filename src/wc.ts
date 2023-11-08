@@ -13,19 +13,14 @@ export const files = {
           "start": "vite"
         },
         "dependencies": {
-          "clsx": "^2.0.0",
           "react": "^18.2.0",
           "react-dom": "^18.2.0"
         },
         "devDependencies": {
-          "@types/node": "^20.8.6",
-          "@types/react": "^18.2.15",
-          "@types/react-dom": "^18.2.7",
           "@vitejs/plugin-react": "^4.0.3",
           "autoprefixer": "^10.4.16",
           "postcss": "^8.4.31",
           "tailwindcss": "^3.3.3",
-          "typescript": "^5.0.2",
           "framer-motion": "^10.16.2",
           "@nextui-org/react": "^2.2.4",
           "vite": "^4.4.5"
@@ -269,17 +264,13 @@ export default function DashboardComponent_CJWNM() {
 // Call only once
 export let webcontainerInstance:WebContainer
 
-export async function installDependencies() {
+export async function installDependencies(stream: WritableStream) {
   webcontainerInstance = await WebContainer.boot();
   await webcontainerInstance.mount(files);
   // Install dependencies
-  const installProcess = await webcontainerInstance.spawn("npm", ["install"]);
+  const installProcess = await webcontainerInstance.spawn("pnpm", ["install"]);
   installProcess.output.pipeTo(
-    new WritableStream({
-      write(data) {
-        console.log(data);
-      },
-    }),
+  stream
   );
   // Wait for install command to exit
   return installProcess.exit;
@@ -287,8 +278,7 @@ export async function installDependencies() {
 // let url: string | null = null
 
 export async function startDevServer() {
-  // Run `npm run start` to start the Express app
-  const proccess = await webcontainerInstance.spawn("npm", ["run", "start"]);
+  const proccess = await webcontainerInstance.spawn("pnpm", ["run", "start"]);
   proccess.output.pipeTo(
     new WritableStream({
       write(data) {

@@ -26,6 +26,7 @@ export async function loadTiktoken(req: RequestEventBase) {
   // console.log(wasm)
   // const {Tiktoken} = await import('@dqbd/tiktoken/lite/tiktoken_bg')
   if (import.meta.env.PROD) {
+    // @ts-ignore
     const { default: wasm} = await import(/* @vite-ignore */ '../../../src/utils/tiktoken_bg.wasm')
     await init((imports) => WebAssembly.instantiate(wasm, imports));
     // const wasmResponsePromise = fetch(wasmUrl)

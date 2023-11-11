@@ -14,6 +14,9 @@ export default defineConfig(() => {
       qwikVite(),
       tsconfigPaths(),
       UnoCSS({
+        content: {
+          filesystem: ['src/**/*.{ts,tsx}']
+        },
         presets: [
           presetUno(), // required
           presetWind(),

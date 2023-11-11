@@ -140,12 +140,12 @@ export default component$(() => {
         >
           <input
             name="description"
-            class="flex h-10 border border-input px-3 py-2 text-sm ring-offset-background border-0 bg-transparent text-sm font-medium text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full !bg-gray-800 text-white rounded-lg border-none placeholder-gray-500"
+            class="flex h-10 border border-input px-3 text-sm ring-offset  border-0 bg-transparent text-sm font-medium text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full !bg-gray-800 text-white rounded-lg border-none placeholder-gray-500"
             placeholder="A SaaS admin dashboard"
             type="text"
           />
           <button
-            class="inline-flex items-center justify-center text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 bg-gray-200 hover:bg-gray-300 text-black rounded-lg px-5 py-2"
+            class="h-10 inline-flex items-center justify-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 bg-gray-200 hover:bg-gray-300 text-black rounded-lg px-5"
             type="submit"
             disabled={loading.value}
           >
@@ -167,8 +167,8 @@ export default component$(() => {
             class="flex flex-col items-center justify-center border-4 border-red-500 rounded-lg p-4"
           >
             <span>
-              loading webcontainers for results, meanwhile write your
-              description and submit baby
+              Loading webcontainers for results, meanwhile write your
+              description and submit baby...
             </span>
 
             <code style={{ whiteSpace: "pre-wrap" }}>

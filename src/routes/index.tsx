@@ -1,5 +1,4 @@
-import type {
-  NoSerialize} from "@builder.io/qwik";
+import type { NoSerialize } from "@builder.io/qwik";
 import {
   component$,
   noSerialize,
@@ -32,11 +31,11 @@ const generateDescription = server$(async function* ({
             // icons: req.body.icons,
           },
         },
-        this
+        this,
       )
       .then(() => writable.close());
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
 
   // this.signal.addEventListener("abort", () => {
@@ -78,17 +77,17 @@ export default component$(() => {
   const wcInstance = useSignal<NoSerialize<WebContainer>>();
   const terminalOutput = useSignal("");
   const code = useSignal("");
+  const loading = useSignal(false);
 
   // console.log('here', generateDescription())
 
   useVisibleTask$(async () => {
-    console.log("here");
     const stream = new WritableStream({
       write(data) {
         console.log(data);
-        terminalOutput.value = data
+        terminalOutput.value = data;
       },
-    })
+    });
     const { installDependencies, startDevServer } = await import("~/wc");
     const exitCode = await installDependencies(stream);
     if (exitCode !== 0) {
@@ -104,49 +103,86 @@ export default component$(() => {
   });
   return (
     <>
-      <form
-        preventdefault:submit
-        onSubmit$={async (e: any) => {
-          console.log(e?.target.description.value);
-          const response = await generateDescription({
-            description: e?.target.description.value,
-          });
-          for await (const value of response) {
-            text.value += value;
+      <div class="bg-black text-white p-10 space-y-6 shadow-lg">
+        <h1 class="text-4xl font-extrabold mb-6 text-gray-100">X1</h1>
+        <h2 class="text-2xl font-semibold mb-6 text-gray-300">
+          You do not need designers for your application
+        </h2>
+        <form
+          class="flex items-center space-x-3 border-b-2 border-gray-800 py-3"
+          preventdefault:submit
+          onSubmit$={async (e: any) => {
+            loading.value = true;
+            const response = await generateDescription({
+              description: e?.target.description.value,
+            });
+            for await (const value of response) {
+              text.value += value;
 
-            const startIndex = text.value.lastIndexOf(startMarker);
-            const endIndex = text.value.lastIndexOf(endMarker);
+              const startIndex = text.value.lastIndexOf(startMarker);
+              const endIndex = text.value.lastIndexOf(endMarker);
 
-            if (startIndex !== -1) {
-              code.value = text.value
-                .slice(
-                  startIndex + startMarker.length,
-                  endIndex === -1 || endIndex === startIndex
-                    ? text.value.length - 1
-                    : endIndex
-                )
-                .trim();
-              // wcInstance.value?.fs.writeFile("App.tsx", code.value);
+              if (startIndex !== -1) {
+                code.value = text.value
+                  .slice(
+                    startIndex + startMarker.length,
+                    endIndex === -1 || endIndex === startIndex
+                      ? text.value.length - 1
+                      : endIndex,
+                  )
+                  .trim();
+                // wcInstance.value?.fs.writeFile("App.tsx", code.value);
+              }
             }
-          }
-          wcInstance.value?.fs.writeFile("App.tsx", code.value);
-        }}
-      >
-        <input name="description" placeholder="description" />
-        <button type="submit">submit</button>
-      </form>
-      {urlSignal.value ? (
-        <iframe style={{ width: "100%", height: '60vh' }} src={urlSignal.value}></iframe>
-      ) : (
-        "loading webcontainers for results, meanwhile write your description and submit baby"
-      )}
+            wcInstance.value?.fs.writeFile("App.tsx", code.value);
+            loading.value = false;
+          }}
+        >
+          <input
+            name="description"
+            class="flex h-10 border border-input px-3 py-2 text-sm ring-offset-background border-0 bg-transparent text-sm font-medium text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full !bg-gray-800 text-white rounded-lg border-none placeholder-gray-500"
+            placeholder="A SaaS admin dashboard"
+            type="text"
+          />
+          <button
+            class="inline-flex items-center justify-center text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 bg-gray-200 hover:bg-gray-300 text-black rounded-lg px-5 py-2"
+            type="submit"
+            disabled={loading.value}
+          >
+            {loading.value ? "Loading..." : "Submit"}
+          </button>
+        </form>
+        <div
+          class="w-full h-[500px] bg-gray-900 rounded-lg overflow-hidden shadow-inner"
+          id="c75j79mcgyg"
+        >
+          <iframe
+            class="w-full h-full"
+            style={{ display: !urlSignal.value ? "none" : undefined }}
+            src={urlSignal.value}
+          />
 
-      <code style={{whiteSpace: 'pre-wrap'}}>{code.value}</code>
-      
-      <br />
-      <span>terminal:</span>
-      <br />
-      <code style={{whiteSpace: 'pre-wrap'}}>{terminalOutput.value}</code>
+          <div
+            style={{ display: urlSignal.value ? "none" : undefined }}
+            class="flex flex-col items-center justify-center border-4 border-red-500 rounded-lg p-4"
+          >
+            <span>
+              loading webcontainers for results, meanwhile write your
+              description and submit baby
+            </span>
+
+            <code style={{ whiteSpace: "pre-wrap" }}>
+              {terminalOutput.value}
+            </code>
+          </div>
+        </div>
+        <div class="w-full h-[500px] bg-gray-900 rounded-lg overflow-hidden shadow-inner">
+          <pre class="w-full h-full text-gray-400 p-6 overflow-scroll">
+            <code style={{ whiteSpace: "pre-wrap" }}>{code.value}</code>
+          </pre>
+        </div>
+        <p class="text-right mt-6 text-gray-500">Built by Xquad</p>
+      </div>
     </>
   );
 });

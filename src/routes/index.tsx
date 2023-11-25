@@ -7,7 +7,7 @@ import {
 } from "@builder.io/qwik";
 import { type DocumentHead, server$ } from "@builder.io/qwik-city";
 import * as multipass from "../multipass/index";
-import type { WebContainer } from "@webcontainer/api";
+// import type { WebContainer } from "@webcontainer/api";
 
 const startMarker = "```tsx";
 const endMarker = "```";
@@ -31,7 +31,7 @@ const generateDescription = server$(async function* ({
             // icons: req.body.icons,
           },
         },
-        this,
+        this
       )
       .then(() => writable.close());
   } catch (e) {
@@ -74,7 +74,7 @@ const generateDescription = server$(async function* ({
 export default component$(() => {
   const urlSignal = useSignal<string>();
   const text = useSignal("");
-  const wcInstance = useSignal<NoSerialize<WebContainer>>();
+  // const wcInstance = useSignal<NoSerialize<WebContainer>>();
   const terminalOutput = useSignal("");
   const code = useSignal("");
   const loading = useSignal(false);
@@ -82,24 +82,23 @@ export default component$(() => {
   // console.log('here', generateDescription())
 
   useVisibleTask$(async () => {
-    const stream = new WritableStream({
-      write(data) {
-        console.log(data);
-        terminalOutput.value = data;
-      },
-    });
-    const { installDependencies, startDevServer } = await import("~/wc");
-    const exitCode = await installDependencies(stream);
-    if (exitCode !== 0) {
-      throw new Error("Installation failed");
-    }
-    const webcontainerInstance = await startDevServer();
-    wcInstance.value = noSerialize(webcontainerInstance);
-
-    webcontainerInstance.on("server-ready", (port, url) => {
-      urlSignal.value = url;
-      wcInstance.value?.fs.writeFile("App.tsx", code.value);
-    });
+    // const stream = new WritableStream({
+    //   write(data) {
+    //     console.log(data);
+    //     terminalOutput.value = data;
+    //   },
+    // });
+    // const { installDependencies, startDevServer } = await import("~/wc");
+    // const exitCode = await installDependencies(stream);
+    // if (exitCode !== 0) {
+    //   throw new Error("Installation failed");
+    // }
+    // const webcontainerInstance = await startDevServer();
+    // wcInstance.value = noSerialize(webcontainerInstance);
+    // webcontainerInstance.on("server-ready", (port, url) => {
+    //   urlSignal.value = url;
+    //   wcInstance.value?.fs.writeFile("App.tsx", code.value);
+    // });
   });
   return (
     <>
@@ -128,13 +127,13 @@ export default component$(() => {
                     startIndex + startMarker.length,
                     endIndex === -1 || endIndex === startIndex
                       ? text.value.length - 1
-                      : endIndex,
+                      : endIndex
                   )
                   .trim();
                 // wcInstance.value?.fs.writeFile("App.tsx", code.value);
               }
             }
-            wcInstance.value?.fs.writeFile("App.tsx", code.value);
+            // wcInstance.value?.fs.writeFile("App.tsx", code.value);
             loading.value = false;
           }}
         >
@@ -161,7 +160,33 @@ export default component$(() => {
             style={{ display: !urlSignal.value ? "none" : undefined }}
             src={urlSignal.value}
           />
+          <div id="root"></div>
+          {code.value && !loading.value ? (
+            <script
+              type="module"
+              dangerouslySetInnerHTML={`
+            import build from "https://esm.sh/build";
+            import *as React from 'react'  
+            import { createRoot } from 'react-dom/client'
 
+            const ret = await build({
+              dependencies: {
+                "react": "18.2.0",
+                // "react-dom": "18.2.0",
+                "@nextui-org/react": "^2.2.4",
+                "framer-motion": "^10.16.2"
+              },
+              code: \`
+                ${code.value}
+              \`,
+            });
+            const { default: App } = await import(ret.url)
+
+            createRoot(window.root).render(React.createElement(App, {}))
+
+          `}
+            />
+          ) : null}
           <div
             style={{ display: urlSignal.value ? "none" : undefined }}
             class="flex flex-col items-center justify-center border-4 border-red-500 rounded-lg p-4"

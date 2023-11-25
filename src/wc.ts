@@ -262,16 +262,14 @@ export default function DashboardComponent_CJWNM() {
 };
 
 // Call only once
-export let webcontainerInstance:WebContainer
+export let webcontainerInstance: WebContainer;
 
 export async function installDependencies(stream: WritableStream) {
   webcontainerInstance = await WebContainer.boot();
   await webcontainerInstance.mount(files);
   // Install dependencies
   const installProcess = await webcontainerInstance.spawn("pnpm", ["install"]);
-  installProcess.output.pipeTo(
-  stream
-  );
+  installProcess.output.pipeTo(stream);
   // Wait for install command to exit
   return installProcess.exit;
 }
@@ -284,7 +282,7 @@ export async function startDevServer() {
       write(data) {
         console.log(data);
       },
-    }),
+    })
   );
   return webcontainerInstance;
 }

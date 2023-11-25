@@ -1,10 +1,4 @@
-import type { NoSerialize } from "@builder.io/qwik";
-import {
-  component$,
-  noSerialize,
-  useSignal,
-  useVisibleTask$,
-} from "@builder.io/qwik";
+import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { type DocumentHead, server$ } from "@builder.io/qwik-city";
 import * as multipass from "../multipass/index";
 // import type { WebContainer } from "@webcontainer/api";

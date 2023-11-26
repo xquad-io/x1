@@ -77,6 +77,30 @@ tailwind.config =  {
       <body lang="en">
         <RouterOutlet />
         <ServiceWorkerRegister />
+
+        <script
+          async
+          type="module"
+          dangerouslySetInnerHTML={`
+            import build from "https://esm.sh/build";
+            import *as React from 'react'  
+            import { createRoot } from 'react-dom/client'
+
+            const ret = await build({
+              dependencies: {
+                "react": "18.2.0",
+                // "react-dom": "18.2.0",
+                "@nextui-org/react": "^2.2.4",
+                "framer-motion": "^10.16.2"
+              },
+              code: \`
+                import '@nextui-org/react'
+                import 'framer-motion'
+              \`,
+            });
+            await import(ret.url)
+          `}
+        />
       </body>
     </QwikCityProvider>
   );

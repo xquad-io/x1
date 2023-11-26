@@ -1,4 +1,9 @@
-import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import {
+  Signal,
+  component$,
+  useSignal,
+  useVisibleTask$,
+} from "@builder.io/qwik";
 import { type DocumentHead, server$ } from "@builder.io/qwik-city";
 import * as multipass from "../multipass/index";
 // import type { WebContainer } from "@webcontainer/api";
@@ -32,10 +37,6 @@ const generateDescription = server$(async function* ({
     console.log(e);
   }
 
-  // this.signal.addEventListener("abort", () => {
-  //   writable.close();
-  // });
-
   const reader = readable.getReader();
   try {
     while (!this.signal.aborted) {
@@ -44,26 +45,15 @@ const generateDescription = server$(async function* ({
       yield value;
     }
   } finally {
-    !reader.closed && reader.releaseLock();
-    // writable.getWriter().releaseLock()
+    reader.releaseLock();
   }
-
-  // console.log('here')
-
-  // console.log(wasmUrl)
-  //     const duplexStream = new PassThrough();
-  //     duplexStream.pipe(res);
-  //     const generated = await multipass.preset({
-  //     stream: duplexStream,
-  //     preset: `componentNew_description`,
-  //     query: {
-  //         description: req.body.description,
-  //         framework: req.body.framework,
-  //         components: req.body.components,
-  //         icons: req.body.icons,
-  //     },
-  //     });
 });
+
+declare global {
+  interface Window {
+    loading: Signal<boolean>;
+  }
+}
 
 export default component$(() => {
   const urlSignal = useSignal<string>();
@@ -71,28 +61,13 @@ export default component$(() => {
   // const wcInstance = useSignal<NoSerialize<WebContainer>>();
   const terminalOutput = useSignal("");
   const code = useSignal("");
+  const isFinal = useSignal(false);
   const loading = useSignal(false);
 
   // console.log('here', generateDescription())
 
   useVisibleTask$(async () => {
-    // const stream = new WritableStream({
-    //   write(data) {
-    //     console.log(data);
-    //     terminalOutput.value = data;
-    //   },
-    // });
-    // const { installDependencies, startDevServer } = await import("~/wc");
-    // const exitCode = await installDependencies(stream);
-    // if (exitCode !== 0) {
-    //   throw new Error("Installation failed");
-    // }
-    // const webcontainerInstance = await startDevServer();
-    // wcInstance.value = noSerialize(webcontainerInstance);
-    // webcontainerInstance.on("server-ready", (port, url) => {
-    //   urlSignal.value = url;
-    //   wcInstance.value?.fs.writeFile("App.tsx", code.value);
-    // });
+    window.loading = loading;
   });
   return (
     <>
@@ -106,6 +81,10 @@ export default component$(() => {
           preventdefault:submit
           onSubmit$={async (e: any) => {
             loading.value = true;
+            code.value = "";
+            isFinal.value = false;
+            // @ts-ignore
+            window.root.innerHTML = "";
             const response = await generateDescription({
               description: e?.target.description.value,
             });
@@ -127,8 +106,9 @@ export default component$(() => {
                 // wcInstance.value?.fs.writeFile("App.tsx", code.value);
               }
             }
+            isFinal.value = true;
             // wcInstance.value?.fs.writeFile("App.tsx", code.value);
-            loading.value = false;
+            // loading.value = false;
           }}
         >
           <input
@@ -149,34 +129,37 @@ export default component$(() => {
           class="w-full h-[500px] bg-gray-900 rounded-lg overflow-hidden shadow-inner"
           id="c75j79mcgyg"
         >
-          <iframe
-            class="w-full h-full"
-            style={{ display: !urlSignal.value ? "none" : undefined }}
-            src={urlSignal.value}
-          />
-          <div id="root"></div>
-          {code.value && !loading.value ? (
+          <div id="root" class="w-full overflow-scroll h-full"></div>
+          {code.value && isFinal.value ? (
             <script
               type="module"
               dangerouslySetInnerHTML={`
             import build from "https://esm.sh/build";
-            import *as React from 'react'  
+            import * as React from 'react'  
             import { createRoot } from 'react-dom/client'
 
-            const ret = await build({
-              dependencies: {
-                "react": "18.2.0",
-                // "react-dom": "18.2.0",
-                "@nextui-org/react": "^2.2.4",
-                "framer-motion": "^10.16.2"
-              },
-              code: \`
-                ${code.value}
-              \`,
-            });
-            const { default: App } = await import(ret.url)
+            try {
+              const ret = await build({
+                dependencies: {
+                  "react": "18.2.0",
+                  // "react-dom": "18.2.0",
+                  "@nextui-org/react": "^2.2.4",
+                  "framer-motion": "^10.16.2"
+                },
+                code: \`
+                  ${code.value}
+                \`,
+              });
+              const { default: App } = await import(ret.url)
 
-            createRoot(window.root).render(React.createElement(App, {}))
+              createRoot(window.root).render(React.createElement(App, {}))
+            } catch (e) {
+              console.log(e)
+              window.root.innerHTML = e?.toString() + '\\n' + e?.stack
+            } finally {
+              window.loading.value = false
+            }
+            
 
           `}
             />

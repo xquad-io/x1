@@ -3,11 +3,7 @@ import type { RequestEventBase } from "@builder.io/qwik-city";
 import type { ChatCompletionMessageParam } from "openai/resources";
 import zodToJsonSchema from "zod-to-json-schema";
 import type { RunOptions } from "~/types";
-import {
-  LIBRARY_COMPONENTS_MAP,
-  _randomUid,
-  createComponentsSchema,
-} from "~/utils/meta";
+import { LIBRARY_COMPONENTS_MAP, createComponentsSchema } from "~/utils/meta";
 import { createOpenAI } from "~/utils/openai";
 
 async function run(options: RunOptions, req: RequestEventBase) {

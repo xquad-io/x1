@@ -82,7 +82,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
   };
 
   const component_task = {
-    name: `${component_design.new_component_name}_${_randomUid(5)}`,
+    name: `App`,
     description: {
       user: options.query.description,
       llm: component_design.new_component_description,

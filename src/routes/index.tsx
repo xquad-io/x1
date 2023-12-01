@@ -1,73 +1,99 @@
-import {
-  Signal,
-  component$,
-  useSignal,
-  useVisibleTask$,
-} from "@builder.io/qwik";
-import { type DocumentHead, server$ } from "@builder.io/qwik-city";
-import * as multipass from "../multipass/index";
-// import type { WebContainer } from "@webcontainer/api";
+import type { Signal } from "@builder.io/qwik";
+import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { type DocumentHead } from "@builder.io/qwik-city";
+import { generate, iterate } from "~/services";
 
 const startMarker = "```tsx";
 const endMarker = "```";
-
-const generateDescription = server$(async function* ({
-  description,
-}: {
-  description: string;
-}) {
-  const { writable, readable } = new TransformStream<string, string>();
-  try {
-    multipass
-      .preset(
-        {
-          stream: writable,
-          preset: `componentNew_description`,
-          query: {
-            description: description,
-            framework: "react",
-            components: "nextui",
-            // icons: req.body.icons,
-          },
-        },
-        this
-      )
-      .then(() => writable.close());
-  } catch (e) {
-    console.log(e);
-  }
-
-  const reader = readable.getReader();
-  try {
-    while (!this.signal.aborted) {
-      const { done, value } = await reader.read();
-      if (done) return;
-      yield value;
-    }
-  } finally {
-    reader.releaseLock();
-  }
-});
 
 declare global {
   interface Window {
     loading: Signal<boolean>;
   }
 }
-
 export default component$(() => {
   const urlSignal = useSignal<string>();
   const text = useSignal("");
-  // const wcInstance = useSignal<NoSerialize<WebContainer>>();
+  const prevDescription = useSignal("");
   const terminalOutput = useSignal("");
   const code = useSignal("");
   const isFinal = useSignal(false);
   const loading = useSignal(false);
-
-  // console.log('here', generateDescription())
+  const isIterate = useSignal(false);
 
   useVisibleTask$(async () => {
     window.loading = loading;
+  });
+
+  const iterateHandler = $(async (e: any) => {
+    // description: e?.target.description.value,
+    // component: {
+    //   description: prevDescription.value,
+    //   code: code.value,
+    //   name: "HelloWorld_FT4T7",
+    // },
+    isFinal.value = false;
+    loading.value = true;
+    const response = await iterate({
+      description: e?.target.description.value,
+      component: {
+        description: prevDescription.value,
+        code: code.value,
+        name: "App",
+      },
+    });
+
+    for await (const value of response) {
+      text.value += value;
+
+      const startIndex = text.value.lastIndexOf(startMarker);
+      const endIndex = text.value.lastIndexOf(endMarker);
+
+      if (startIndex !== -1) {
+        code.value = text.value
+          .slice(
+            startIndex + startMarker.length,
+            endIndex === -1 || endIndex === startIndex
+              ? text.value.length - 1
+              : endIndex
+          )
+          .trim();
+      }
+    }
+    loading.value = true;
+    isFinal.value = true;
+  });
+  const generateHandler = $(async (e: any) => {
+    // removeing $ from this function would cause error, should be reported to qwikjs
+    loading.value = true;
+    code.value = "";
+    isFinal.value = false;
+    // @ts-ignore
+    window.root.innerHTML = "";
+    const response = await generate({
+      description: e?.target.description.value,
+    });
+    for await (const value of response) {
+      text.value += value;
+
+      const startIndex = text.value.lastIndexOf(startMarker);
+      const endIndex = text.value.lastIndexOf(endMarker);
+
+      if (startIndex !== -1) {
+        code.value = text.value
+          .slice(
+            startIndex + startMarker.length,
+            endIndex === -1 || endIndex === startIndex
+              ? text.value.length - 1
+              : endIndex
+          )
+          .trim();
+      }
+    }
+
+    prevDescription.value = e?.target.description.value;
+    isFinal.value = true;
+    isIterate.value = true;
   });
   return (
     <>
@@ -79,37 +105,7 @@ export default component$(() => {
         <form
           class="flex items-center space-x-3 border-b-2 border-gray-800 py-3"
           preventdefault:submit
-          onSubmit$={async (e: any) => {
-            loading.value = true;
-            code.value = "";
-            isFinal.value = false;
-            // @ts-ignore
-            window.root.innerHTML = "";
-            const response = await generateDescription({
-              description: e?.target.description.value,
-            });
-            for await (const value of response) {
-              text.value += value;
-
-              const startIndex = text.value.lastIndexOf(startMarker);
-              const endIndex = text.value.lastIndexOf(endMarker);
-
-              if (startIndex !== -1) {
-                code.value = text.value
-                  .slice(
-                    startIndex + startMarker.length,
-                    endIndex === -1 || endIndex === startIndex
-                      ? text.value.length - 1
-                      : endIndex
-                  )
-                  .trim();
-                // wcInstance.value?.fs.writeFile("App.tsx", code.value);
-              }
-            }
-            isFinal.value = true;
-            // wcInstance.value?.fs.writeFile("App.tsx", code.value);
-            // loading.value = false;
-          }}
+          onSubmit$={isIterate.value ? iterateHandler : generateHandler}
         >
           <input
             name="description"
@@ -122,7 +118,11 @@ export default component$(() => {
             type="submit"
             disabled={loading.value}
           >
-            {loading.value ? "Loading..." : "Submit"}
+            {loading.value
+              ? "Loading..."
+              : isIterate.value
+              ? "Iterate"
+              : "Submit"}
           </button>
         </form>
         <div

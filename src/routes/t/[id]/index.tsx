@@ -22,6 +22,7 @@ export const useGetProjectInfo = routeLoader$(async (req) => {
   const project = await getProject(req.params.id);
   return {
     ...project,
+    defined: !!project,
     isAuthor: req.cookie.get("uuid")!.value === project?.author,
   };
 });
@@ -140,7 +141,7 @@ export default component$(() => {
         <h2 class="text-2xl font-semibold mb-6 text-gray-300">
           You do not need designers for your application
         </h2>
-        {projectInfo.value.isAuthor ? (
+        {projectInfo.value.isAuthor && projectInfo.value.defined ? (
           <form
             class="flex items-center space-x-3 border-b-2 border-gray-800 py-3"
             preventdefault:submit

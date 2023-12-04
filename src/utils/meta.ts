@@ -2,7 +2,6 @@
 // import wasm from "~/../node_modules/@dqbd/tiktoken/lite/tiktoken_bg.wasm?raw";
 import { init, Tiktoken } from "@dqbd/tiktoken/lite/init";
 import model from "@dqbd/tiktoken/encoders/cl100k_base.json";
-import type { RequestEventBase } from "@builder.io/qwik-city";
 import { z } from "@builder.io/qwik-city";
 // console.log(model)
 

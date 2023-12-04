@@ -75,8 +75,8 @@ export default component$(() => {
       }
     }
 
-    server$(function () {
-      updateProject(location.params.id, code.value);
+    await server$(async function () {
+      await updateProject(location.params.id, code.value);
     })();
     loading.value = true;
     isFinal.value = true;
@@ -109,8 +109,9 @@ export default component$(() => {
       }
     }
     prevDescription.value = e?.target.description.value;
-    server$(function () {
-      addProject(location.params.id, {
+    await server$(async function () {
+      console.log("addProject");
+      await addProject(location.params.id, {
         description: prevDescription.value,
         code: code.value,
         author: this.cookie.get("uuid")!.value,

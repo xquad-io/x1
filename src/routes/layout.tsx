@@ -4,6 +4,7 @@ import { setKV } from "~/utils/kv";
 
 export const onRequest: RequestHandler = async (req) => {
   if (req.env.get("CF_PAGES")) {
+    console.log("here", req.env.get("X1"));
     setKV(req.env.get("X1") as any);
   }
 };

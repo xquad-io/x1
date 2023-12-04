@@ -5,7 +5,6 @@ import {
   type DocumentHead,
   useLocation,
   routeLoader$,
-  useNavigate,
 } from "@builder.io/qwik-city";
 import { generate, iterate } from "~/services";
 import { addProject, forkProject, getProject, updateProject } from "~/utils/kv";

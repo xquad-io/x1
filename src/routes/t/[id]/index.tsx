@@ -186,6 +186,13 @@ export default component$(() => {
           >
             Fork
           </button>
+
+          <a
+            href="/"
+            class="h-10 inline-flex items-center justify-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 bg-gray-200 hover:bg-gray-300 text-black rounded-lg px-5"
+          >
+            Create
+          </a>
         </div>
 
         <div

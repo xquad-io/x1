@@ -43,6 +43,9 @@ devDependencies:
   '@builder.io/qwik-city':
     specifier: ^1.2.17
     version: 1.2.17(@types/node@20.8.10)
+  '@cloudflare/workers-types':
+    specifier: ^4.20231121.0
+    version: 4.20231121.0
   '@types/eslint':
     specifier: ^8.44.4
     version: 8.44.6
@@ -55,6 +58,9 @@ devDependencies:
   '@typescript-eslint/parser':
     specifier: ^6.7.5
     version: 6.9.1(eslint@8.53.0)(typescript@5.2.2)
+  cloudflare-kv-isomorphic:
+    specifier: ^0.0.9
+    version: 0.0.9
   eslint:
     specifier: ^8.51.0
     version: 8.53.0
@@ -324,6 +330,10 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@cloudflare/workers-types@4.20231121.0:
+    resolution: {integrity: sha512-+kWfpCkqiepwAKXyHoE0gnkPgkLhz0/9HOBIGhHRsUvUKvhUtm3mbqqoGRWgF1qcjzrDUBbrrOq4MYHfFtc2RA==}
+    dev: true
 
   /@dqbd/tiktoken@1.0.7:
     resolution: {integrity: sha512-bhR5k5W+8GLzysjk8zTMVygQZsgvf7W1F0IlL4ZQ5ugjo5rCyiwGM5d8DYriXspytfu98tv59niang3/T+FoDw==}
@@ -1665,6 +1675,10 @@ packages:
 
   /chownr@1.1.4:
     resolution: {integrity: sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==}
+    dev: true
+
+  /cloudflare-kv-isomorphic@0.0.9:
+    resolution: {integrity: sha512-uoqlpsbbzNNlG8bwj+zX45/Y1y/4XQcZZ3EpN6zTFkbhEe8x0IPPJSiWkLUVrSikq6pqAJEsSZ6Ef3xewRxizA==}
     dev: true
 
   /color-convert@1.9.3:

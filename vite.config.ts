@@ -26,7 +26,7 @@ export default defineConfig(() => {
     build: {
       target: "esnext",
       rollupOptions: {
-        external: ["../../../src/utils/tiktoken_bg.wasm"],
+        external: ["../../../src/utils/tiktoken_bg.wasm", "fs"],
       },
     },
     // esbuild: {target: },

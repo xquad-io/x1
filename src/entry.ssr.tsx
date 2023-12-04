@@ -17,6 +17,13 @@ import {
 import { manifest } from "@qwik-client-manifest";
 import Root from "./root";
 
+if (import.meta.env.DEV) {
+  const { default: kvNode } = await import("cloudflare-kv-isomorphic");
+  const kv = await import("~/utils/kv");
+
+  kv.setKV(kvNode("X1") as any);
+}
+
 export default function (opts: RenderToStreamOptions) {
   return renderToStream(<Root />, {
     manifest,

@@ -3,6 +3,7 @@
 /lib
 /lib-types
 /server
+.kv-X1.json
 
 # Development
 node_modules

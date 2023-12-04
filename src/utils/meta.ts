@@ -14,7 +14,7 @@ let _tiktokenEncoder: Tiktoken | null = null;
 // loadTiktoken()
 
 // console.log(wasm)
-export async function loadTiktoken(req: RequestEventBase) {
+export async function loadTiktoken() {
   console.log("load tiktoken");
   if (_tiktokenEncoder) {
     return _tiktokenEncoder;
@@ -27,6 +27,7 @@ export async function loadTiktoken(req: RequestEventBase) {
     if (import.meta.env.PROD) {
       // @ts-ignore
       const { default: wasm } = await import(
+        // @ts-ignore
         /* @vite-ignore */ "../../../src/utils/tiktoken_bg.wasm"
       );
       await init((imports) => WebAssembly.instantiate(wasm, imports));

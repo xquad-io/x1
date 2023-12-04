@@ -5,7 +5,6 @@ import {
   type DocumentHead,
   useLocation,
   routeLoader$,
-  Link,
   useNavigate,
 } from "@builder.io/qwik-city";
 import { generate, iterate } from "~/services";
@@ -42,7 +41,6 @@ export default component$(() => {
   const shareText = useSignal("Share");
 
   const location = useLocation();
-  const nav = useNavigate();
   useVisibleTask$(async () => {
     window.loading = loading;
   });

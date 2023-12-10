@@ -4,7 +4,6 @@ import {
   component$,
   useSignal,
   useTask$,
-  useTaskQrl,
   useVisibleTask$,
 } from "@builder.io/qwik";
 import { routeLoader$, server$, useLocation } from "@builder.io/qwik-city";
@@ -40,10 +39,8 @@ export default component$(() => {
   const currentTab = useSignal<"result" | "code">("result");
 
   const projectInfo = useGetProjectInfo();
-  const urlSignal = useSignal<string>();
   const text = useSignal("");
   const prevDescription = useSignal(projectInfo.value.description ?? "");
-  const terminalOutput = useSignal("");
   const code = useSignal(projectInfo.value.code ?? "");
   const isFinal = useSignal(!!projectInfo.value.code || false);
   const loading = useSignal(false);

@@ -3,8 +3,9 @@ import { qwikVite } from "@builder.io/qwik/optimizer";
 import { qwikCity } from "@builder.io/qwik-city/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import wasm from "vite-plugin-wasm";
-import { presetUno, presetWind } from "unocss";
+import { presetUno, presetWebFonts, presetWind } from "unocss";
 import UnoCSS from "unocss/vite";
+import { qwikReact } from "@builder.io/qwik-react/vite";
 
 export default defineConfig(() => {
   return {
@@ -15,13 +16,25 @@ export default defineConfig(() => {
       tsconfigPaths(),
       UnoCSS({
         content: {
-          filesystem: ['src/**/*.{ts,tsx}']
+          filesystem: ["src/**/*.{ts,tsx}"],
         },
         presets: [
-          presetUno(), // required
+          presetUno(),
           presetWind(),
+          presetWebFonts({
+            provider: "google",
+            fonts: {
+              sora: [
+                {
+                  name: "Sora",
+                  weights: ["100", "300", "400", "500", "600", "700"],
+                },
+              ],
+            },
+          }),
         ],
       }),
+      qwikReact(),
     ],
     build: {
       target: "esnext",

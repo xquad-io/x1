@@ -1,6 +1,5 @@
 import { component$ } from "@builder.io/qwik";
 import { useNavigate } from "@builder.io/qwik-city";
-import { QParticlesBgCanvas } from "~/components/canvas";
 
 // export const onGet: RequestHandler = async (req) => {
 //   if (req.url.pathname === "/") {
@@ -19,8 +18,8 @@ export default component$(() => {
         <form
           preventdefault:submit
           onSubmit$={(e) => {
+            // @ts-ignore
             const promptQuery = encodeURIComponent(e.target.prompt.value);
-            console.log("here", promptQuery);
             nav(`/t/${crypto.randomUUID()}?q=${promptQuery}`, {
               forceReload: true,
             });

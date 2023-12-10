@@ -1,14 +1,21 @@
 import type { Signal } from "@builder.io/qwik";
-import { $, component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import {
-  server$,
-  type DocumentHead,
-  useLocation,
-  routeLoader$,
-} from "@builder.io/qwik-city";
+  $,
+  component$,
+  useSignal,
+  useTask$,
+  useTaskQrl,
+  useVisibleTask$,
+} from "@builder.io/qwik";
+import { routeLoader$, server$, useLocation } from "@builder.io/qwik-city";
+import "highlight.js/styles/dark.min.css";
+import hljs from "highlight.js";
+import tsx from "highlight.js/lib/languages/typescript";
 import { generate, iterate } from "~/services";
 import { addProject, forkProject, getProject, updateProject } from "~/utils/kv";
 import "~/entry.ssr";
+
+hljs.registerLanguage("typescript", tsx);
 
 const startMarker = "```tsx";
 const endMarker = "```";
@@ -28,6 +35,10 @@ export const useGetProjectInfo = routeLoader$(async (req) => {
 });
 
 export default component$(() => {
+  const location = useLocation();
+  const query = location.url.searchParams.get("q")!;
+  const currentTab = useSignal<"result" | "code">("result");
+
   const projectInfo = useGetProjectInfo();
   const urlSignal = useSignal<string>();
   const text = useSignal("");
@@ -40,16 +51,11 @@ export default component$(() => {
 
   const shareText = useSignal("Share");
 
-  const location = useLocation();
-  useVisibleTask$(async () => {
-    window.loading = loading;
-  });
-
   const iterateHandler = $(async (e: any) => {
     isFinal.value = false;
     loading.value = true;
     const response = await iterate({
-      description: e?.target.description.value,
+      description: e?.target.prompt.value,
       component: {
         description: prevDescription.value,
         code: code.value,
@@ -81,15 +87,16 @@ export default component$(() => {
     loading.value = true;
     isFinal.value = true;
   });
-  const generateHandler = $(async (e: any) => {
+  const generateHandler = $(async () => {
     // removeing $ from this function would cause error, should be reported to qwikjs
     loading.value = true;
     code.value = "";
     isFinal.value = false;
     // @ts-ignore
     window.root.innerHTML = "";
+    location.url.searchParams.delete("q");
     const response = await generate({
-      description: e?.target.description.value,
+      description: query,
     });
     for await (const value of response) {
       text.value += value;
@@ -108,7 +115,7 @@ export default component$(() => {
           .trim();
       }
     }
-    prevDescription.value = e?.target.description.value;
+    prevDescription.value = query;
     await server$(async function () {
       console.log("addProject");
       await addProject(location.params.id, {
@@ -121,6 +128,7 @@ export default component$(() => {
     isFinal.value = true;
     isIterate.value = true;
   });
+
   const forkHandler = $(async () => {
     const url = await server$(async function () {
       return `/t/${await forkProject(
@@ -130,77 +138,140 @@ export default component$(() => {
     })();
     window.location.replace(url);
   });
+  useTask$(({ track }) => {
+    track(loading);
+
+    if (loading.value) {
+      currentTab.value = "code";
+    } else {
+      currentTab.value = "result";
+    }
+  });
+
+  useVisibleTask$(function () {
+    window.loading = loading;
+    if (projectInfo.value.defined) {
+      return;
+    }
+    generateHandler();
+  });
+
   return (
-    <>
-      <div class="bg-black text-white p-10 space-y-6 shadow-lg">
-        <a
-          href="/"
-          class="text-4xl underline font-extrabold mb-6 text-gray-100"
+    <main class="clip-pa font-sora w-full h-full max-w-[1263px] px-5">
+      {projectInfo.value.isAuthor || !projectInfo.value.defined ? (
+        <form
+          preventdefault:submit
+          onSubmit$={iterateHandler}
+          class="font-medium border bg-stone-50 self-center flex max-w-full items-center justify-between gap-5 mt-8 pl-7 pr-5 py-3.5 rounded-[60px] border-solid border-neutral-400 max-md:flex-wrap max-md:px-5"
         >
-          X1
-        </a>
-        <h2 class="text-2xl font-semibold mb-6 text-gray-300">
-          You do not need designers for your application
-        </h2>
-        {projectInfo.value.isAuthor || !projectInfo.value.defined ? (
-          <form
-            class="flex items-center space-x-3 border-b-2 border-gray-800 py-3"
-            preventdefault:submit
-            onSubmit$={isIterate.value ? iterateHandler : generateHandler}
-          >
-            <input
-              name="description"
-              class="flex h-10 border border-input px-3 text-sm ring-offset  border-0 bg-transparent text-sm font-medium text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full !bg-gray-800 text-white rounded-lg border-none placeholder-gray-500"
-              placeholder="A SaaS admin dashboard"
-              value={prevDescription.value}
-              type="text"
-            />
-            <button
-              class="h-10 inline-flex items-center justify-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 bg-gray-200 hover:bg-gray-300 text-black rounded-lg px-5"
-              type="submit"
-              disabled={loading.value}
-            >
-              {loading.value
-                ? "Loading..."
-                : isIterate.value
-                ? "Iterate"
-                : "Submit"}
+          <input
+            name="prompt"
+            placeholder="Edit..."
+            class=" text-black placeholder:text-neutral-400 grow shrink basis-auto my-auto focus:outline-none"
+          />
+          {loading.value ? (
+            <div class="load-3 -mt-4">
+              <div class="line"></div>
+              <div class="line"></div>
+              <div class="line"></div>
+            </div>
+          ) : (
+            <button type="submit">
+              <img
+                loading="lazy"
+                srcSet="/enter-icon.svg"
+                class="aspect-square object-contain object-center w-8 overflow-hidden self-stretch shrink-0 max-w-full"
+              />
             </button>
-          </form>
-        ) : null}
-        <div class="flex gap-10px">
-          <button
-            onClick$={$(() => {
-              window.navigator.clipboard.writeText(location.url.href);
-              shareText.value = "Copied!";
-              setTimeout(() => {
-                shareText.value = "Share";
-              }, 1500);
-            })}
-            class="h-10 inline-flex items-center justify-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 bg-gray-200 hover:bg-gray-300 text-black rounded-lg px-5"
-          >
-            {shareText.value}
-          </button>
-          <button
-            onClick$={forkHandler}
-            class="h-10 inline-flex items-center justify-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 bg-gray-200 hover:bg-gray-300 text-black rounded-lg px-5"
-          >
-            Fork
-          </button>
-
-          <a
-            href="/"
-            class="h-10 inline-flex items-center justify-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 bg-gray-200 hover:bg-gray-300 text-black rounded-lg px-5"
-          >
-            Create
-          </a>
-        </div>
-
-        <div
-          class="w-full h-[500px] bg-gray-900 rounded-lg overflow-hidden shadow-inner"
-          id="c75j79mcgyg"
+          )}{" "}
+        </form>
+      ) : null}
+      <div class="my-4 flex justify-between border-b border-gray-200 dark:border-gray-700">
+        <ul
+          class="flex flex-wrap -mb-px text-sm font-medium text-center"
+          id="default-tab"
+          data-tabs-toggle="#default-tab-content"
+          role="tablist"
         >
-          <div id="root" class="w-full overflow-scroll h-full"></div>
+          <li class="me-2" role="presentation">
+            <button
+              class={[
+                "inline-block p-4 rounded-t-lg ",
+                currentTab.value === "result"
+                  ? "border-b-2"
+                  : "hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300",
+              ]}
+              id="profile-tab"
+              data-tabs-target="#profile"
+              type="button"
+              role="tab"
+              aria-controls="profile"
+              aria-selected="false"
+              onClick$={() => (currentTab.value = "result")}
+            >
+              Result
+            </button>
+          </li>
+          <li class="me-2" role="presentation">
+            <button
+              class={[
+                "inline-block p-4 rounded-t-lg ",
+                currentTab.value === "code"
+                  ? "border-b-2"
+                  : "hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300",
+              ]}
+              id="dashboard-tab"
+              data-tabs-target="#dashboard"
+              type="button"
+              role="tab"
+              aria-controls="dashboard"
+              aria-selected="false"
+              onClick$={() => (currentTab.value = "code")}
+            >
+              Code
+            </button>
+          </li>
+        </ul>
+        <ul class="flex flex-wrap items-center -mb-px text-sm font-medium text-center">
+          <li class="me-2 ">
+            <button
+              onClick$={$(() => {
+                window.navigator.clipboard.writeText(location.url.href);
+                shareText.value = "Copied!";
+                setTimeout(() => {
+                  shareText.value = "Share";
+                }, 1500);
+              })}
+              class="p-4"
+            >
+              {shareText.value}
+            </button>
+          </li>
+          <li class="me-2">
+            <button class="p-4" onClick$={forkHandler}>
+              Fork
+            </button>
+          </li>
+
+          <li class="me-2">
+            <a
+              href="/"
+              class="p-4 bg-#00ff68 px-4 text-#1C413C flex items-center cursor-pointer transition duration-300 active:duration-100 relative rounded clip-path-polygon-default h-10"
+            >
+              New
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="relative min-w-full h-70%">
+        <div
+          class={[
+            `min-w-full min-h-full max-h-full overflow-y-auto absolute rounded-lg bg-gray-50 dark:bg-gray-800`,
+            currentTab.value === "result" ? "" : "-left-1000%",
+          ]}
+          role="tabpanel"
+        >
+          <div id="root" class="min-w-full  h-full"></div>
           {code.value && isFinal.value ? (
             <script
               type="module"
@@ -235,37 +306,28 @@ export default component$(() => {
           `}
             />
           ) : null}
-          <div
-            style={{ display: urlSignal.value ? "none" : undefined }}
-            class="flex flex-col items-center justify-center border-4 border-red-500 rounded-lg p-4"
-          >
-            <span>
-              Loading webcontainers for results, meanwhile write your
-              description and submit baby...
-            </span>
+        </div>
+        <div
+          class={[
+            `min-w-full min-h-full max-h-full overflow-y-auto absolute p-4 rounded-lg bg-gray-800`,
+            currentTab.value === "code" ? "" : "-left-1000%",
+          ]}
+          role="tabpanel"
+        >
+          <code
+            class="language-ts min-w-full min-h-5rem"
+            style={{ whiteSpace: "pre-wrap" }}
+            dangerouslySetInnerHTML={
+              hljs.highlight(
+                code.value,
 
-            <code style={{ whiteSpace: "pre-wrap" }}>
-              {terminalOutput.value}
-            </code>
-          </div>
+                { language: "tsx" }
+              ).value
+            }
+          ></code>
         </div>
-        <div class="w-full h-[500px] bg-gray-900 rounded-lg overflow-hidden shadow-inner">
-          <pre class="w-full h-full text-gray-400 p-6 overflow-scroll">
-            <code style={{ whiteSpace: "pre-wrap" }}>{code.value}</code>
-          </pre>
-        </div>
-        <p class="text-right mt-6 text-gray-500">Built by Xquad</p>
       </div>
-    </>
+      {/* <script src="/prism.js" /> */}
+    </main>
   );
 });
-
-export const head: DocumentHead = {
-  title: "Welcome to Qwik",
-  meta: [
-    {
-      name: "description",
-      content: "Qwik site description",
-    },
-  ],
-};

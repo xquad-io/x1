@@ -8,6 +8,7 @@ import {
 import { RouterHead } from "./components/router-head/router-head";
 
 import "./global.css";
+import { QParticlesBgCanvas } from "./components/canvas";
 
 export default component$(() => {
   /**
@@ -74,7 +75,7 @@ tailwind.config =  {
 
         <RouterHead />
       </head>
-      <body lang="en">
+      <body lang="en" class="antialiased text-white select-none">
         <RouterOutlet />
         <ServiceWorkerRegister />
 

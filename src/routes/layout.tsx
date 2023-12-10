@@ -1,5 +1,7 @@
 import { component$, Slot } from "@builder.io/qwik";
 import type { RequestHandler } from "@builder.io/qwik-city";
+import Navbar from "~/components/Navbar";
+import { QParticlesBgCanvas } from "~/components/canvas";
 import { setKV } from "~/utils/kv";
 
 export const onRequest: RequestHandler = async (req) => {
@@ -30,5 +32,17 @@ export const onGet: RequestHandler = async (req) => {
 };
 
 export default component$(() => {
-  return <Slot />;
+  return (
+    <>
+      <div class="z-7 absolute min-h-full w-full h-full flex-col flex items-center">
+        <Navbar />
+        <Slot />
+      </div>
+      <div class="absolute w-full h-full bg-black"></div>
+      <div class="h-full w-full fixed z-0 overflow-hidden top-0 left-0 opacity-60 md:opacity-90">
+        <div class="absolute top-0 left-0 z-1 w-full h-full shadow-[0px_0px_200px_3vw_black_inset]" />
+        <QParticlesBgCanvas client:idle />
+      </div>
+    </>
+  );
 });

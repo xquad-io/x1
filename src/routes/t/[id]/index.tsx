@@ -17,6 +17,7 @@ import "~/entry.ssr";
 import Loading from "~/components/Loading";
 import EnterIcon from "~/media/icons/enter.png?jsx";
 import darkMin from "highlight.js/styles/dark.min.css?inline";
+import Preloads from "~/components/preloads";
 
 hljs.registerLanguage("typescript", tsx);
 
@@ -186,6 +187,7 @@ export default component$(() => {
 
   return (
     <main class="clip-pa font-sora w-full h-full max-w-[1263px] px-5">
+      <Preloads />
       {projectInfo.value.isAuthor || !projectInfo.value.defined ? (
         <form
           preventdefault:submit

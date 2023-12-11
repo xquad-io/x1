@@ -21,6 +21,12 @@ export default component$(() => {
       <head>
         <meta charSet="utf-8" />
         <link rel="manifest" href="/manifest.json" />
+        <link
+          rel="icon"
+          href="https://xquad.io/favicon.ico"
+          type="image/x-icon"
+          sizes="16x16"
+        ></link>
         {/* This is conflicting with unocss, any solution */}
         <script src="https://cdn.tailwindcss.com"></script>
         <script

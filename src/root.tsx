@@ -21,9 +21,22 @@ export default component$(() => {
       <head>
         <meta charSet="utf-8" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="preload" href="/global.css" as="style" />
         {/* This is conflicting with unocss, any solution */}
         <script src="https://cdn.tailwindcss.com"></script>
+        <script
+          async
+          type="importmap"
+          dangerouslySetInnerHTML={`
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.2.0",
+      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+      "@nextui-org/react": "https://esm.sh/@nextui-org/react@^2.2.4",
+      "framer-motion": "https://esm.sh/framer-motion@^10.16.2"
+    }
+  }
+`}
+        ></script>
         <RouterHead />
       </head>
       <body lang="en" class="antialiased text-white select-none">

@@ -2,22 +2,7 @@ import { component$ } from "@builder.io/qwik";
 
 export default component$(() => (
   <>
-    <script
-      async
-      type="importmap"
-      dangerouslySetInnerHTML={`
-  {
-    "imports": {
-      "react": "https://esm.sh/react@18.2.0",
-      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-      "@nextui-org/react": "https://esm.sh/@nextui-org/react@^2.2.4",
-      "framer-motion": "https://esm.sh/framer-motion@^10.16.2"
-    }
-  }
-`}
-    ></script>
     <script type="module" src="https://esm.sh/run" async></script>
-
     <script
       type="module"
       dangerouslySetInnerHTML={`

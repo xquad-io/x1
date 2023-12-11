@@ -46,7 +46,7 @@ export default component$(() => {
           ) : (
             <>
               <link rel="prefetch" href={url.value} />
-              <Link prefetch href={url.value}>
+              <Link onClick$={() => } prefetch href={url.value}>
                 <EnterIcon class=" border-none" />
               </Link>
             </>

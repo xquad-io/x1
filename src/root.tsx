@@ -1,4 +1,5 @@
 import "virtual:uno.css";
+import "./global.css";
 import { component$ } from "@builder.io/qwik";
 import {
   QwikCityProvider,

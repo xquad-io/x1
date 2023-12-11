@@ -1,5 +1,7 @@
-import { component$ } from "@builder.io/qwik";
-import { useNavigate } from "@builder.io/qwik-city";
+import { component$, useComputed$, useSignal } from "@builder.io/qwik";
+import { Link, useLocation, useNavigate } from "@builder.io/qwik-city";
+import Loading from "~/components/Loading";
+import EnterIcon from "~/media/icons/enter.png?jsx";
 
 // export const onGet: RequestHandler = async (req) => {
 //   if (req.url.pathname === "/") {
@@ -9,6 +11,11 @@ import { useNavigate } from "@builder.io/qwik-city";
 
 export default component$(() => {
   const nav = useNavigate();
+  const location = useLocation();
+  const uuid = crypto.randomUUID();
+
+  const promptQuery = useSignal("");
+  const url = useComputed$(() => `/t/${uuid}/?q=${promptQuery.value}`);
   return (
     <main class="font-sora min-h-70% w-full relative flex justify-center items-center">
       <div class="flex grow flex-col items-stretch max-md:max-w-full">
@@ -17,27 +24,33 @@ export default component$(() => {
         </h1>
         <form
           preventdefault:submit
-          onSubmit$={(e) => {
-            // @ts-ignore
-            const promptQuery = encodeURIComponent(e.target.prompt.value);
-            nav(`/t/${crypto.randomUUID()}?q=${promptQuery}`, {
+          // When the user presses Enter
+          onSubmit$={() => {
+            nav(url.value, {
               forceReload: true,
             });
           }}
           class="border bg-stone-50 self-center flex w-[500px] max-w-full items-center justify-between gap-5 mt-8 pl-7 pr-5 py-3.5 rounded-[60px] border-solid border-neutral-400 max-md:flex-wrap max-md:px-5"
         >
           <input
+            onChange$={(e) =>
+              (promptQuery.value = encodeURIComponent(e.target.value))
+            }
             name="prompt"
-            placeholder="A dashboard with a sidebar"
-            class=" text-black placeholder:text-neutral-400 text-lg grow shrink basis-auto my-auto focus:outline-none"
+            placeholder="A dashboard with a sidebar..."
+            class="border-none text-black placeholder:text-neutral-400 text-lg grow shrink basis-auto my-auto focus:outline-none"
           />
-          <button type="submit">
-            <img
-              loading="lazy"
-              srcSet="/enter-icon.svg"
-              class="aspect-square object-contain object-center w-8 overflow-hidden self-stretch shrink-0 max-w-full"
-            />
-          </button>
+          {/* for prefetching */}
+          {location.isNavigating ? (
+            <Loading />
+          ) : (
+            <>
+              <link rel="prefetch" href={url.value} />
+              <Link prefetch href={url.value}>
+                <EnterIcon class=" border-none" />
+              </Link>
+            </>
+          )}
         </form>
         <div class="hidden mt-56 max-md:max-w-full max-md:mt-10">
           <div class="gap-5 flex max-md:flex-col max-md:items-stretch max-md:gap-0">

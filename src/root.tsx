@@ -1,4 +1,4 @@
-import "virtual:uno.css";
+// import "virtual:uno.css";
 import { component$ } from "@builder.io/qwik";
 import {
   QwikCityProvider,
@@ -6,8 +6,6 @@ import {
   ServiceWorkerRegister,
 } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/router-head/router-head";
-
-import "./global.css";
 
 export default component$(() => {
   /**
@@ -22,6 +20,13 @@ export default component$(() => {
       <head>
         <meta charSet="utf-8" />
         <link rel="manifest" href="/manifest.json" />
+        <link rel="preload" href="/global.css" as="style" />
+        <link rel="preload" href="virtual:uno.css" as="style" />
+
+        <RouterHead />
+      </head>
+      <body lang="en" class="antialiased text-white select-none">
+        <ServiceWorkerRegister />
         <script
           async
           type="importmap"
@@ -61,23 +66,6 @@ tailwind.config =  {
         `}
         ></script>
 
-        {/* "autoprefixer": "^10.4.16",
-          "postcss": "^8.4.31",
-          "tailwindcss": "^3.3.3",
-          "framer-motion": "^10.16.2",
-          "@nextui-org/react": "^2.2.4",
-          "vite": "^4.4.5"
-          "react": "^18.2.0",
-          "react-dom": "^18.2.0"
-          
-          */}
-
-        <RouterHead />
-      </head>
-      <body lang="en" class="antialiased text-white select-none">
-        <RouterOutlet />
-        <ServiceWorkerRegister />
-
         <script
           async
           type="module"
@@ -101,6 +89,8 @@ tailwind.config =  {
             await import(ret.url)
           `}
         />
+
+        <RouterOutlet />
       </body>
     </QwikCityProvider>
   );

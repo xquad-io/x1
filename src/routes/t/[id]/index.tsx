@@ -3,16 +3,20 @@ import {
   $,
   component$,
   useSignal,
+  useStyles$,
   useTask$,
   useVisibleTask$,
 } from "@builder.io/qwik";
 import { routeLoader$, server$, useLocation } from "@builder.io/qwik-city";
-import "highlight.js/styles/dark.min.css";
+// import "highlight.js/styles/dark.min.css";
 import hljs from "highlight.js";
 import tsx from "highlight.js/lib/languages/typescript";
 import { generate, iterate } from "~/services";
 import { addProject, forkProject, getProject, updateProject } from "~/utils/kv";
 import "~/entry.ssr";
+import Loading from "~/components/Loading";
+import EnterIcon from "~/media/icons/enter.png?jsx";
+import darkMin from "highlight.js/styles/dark.min.css?inline";
 
 hljs.registerLanguage("typescript", tsx);
 
@@ -34,6 +38,7 @@ export const useGetProjectInfo = routeLoader$(async (req) => {
 });
 
 export default component$(() => {
+  useStyles$(darkMin);
   const location = useLocation();
   const query = location.url.searchParams.get("q")!;
   const currentTab = useSignal<"result" | "code">("result");
@@ -47,10 +52,34 @@ export default component$(() => {
   const isIterate = useSignal<boolean>(!!projectInfo.value.code || false);
 
   const shareText = useSignal("Share");
+  const startDotsLoading = $(() => {
+    let i = 0;
+    const prevCode = code.value;
+    const loadingComment = "// loading";
+    code.value = loadingComment;
+    const interval = setInterval(() => {
+      i++;
+      if (i === 4) {
+        i = 0;
+        return (code.value = loadingComment);
+      }
+      code.value += ".";
+    }, 300);
+    let alreadyStopped = false;
+    return () => {
+      if (alreadyStopped) {
+        return;
+      }
+      clearInterval(interval);
+      code.value = prevCode;
+      alreadyStopped = true;
+    };
+  });
 
   const iterateHandler = $(async (e: any) => {
     isFinal.value = false;
     loading.value = true;
+    const stopDotsLoading = await startDotsLoading();
     const response = await iterate({
       description: e?.target.prompt.value,
       component: {
@@ -67,6 +96,7 @@ export default component$(() => {
       const endIndex = text.value.lastIndexOf(endMarker);
 
       if (startIndex !== -1) {
+        stopDotsLoading();
         code.value = text.value
           .slice(
             startIndex + startMarker.length,
@@ -89,9 +119,9 @@ export default component$(() => {
     loading.value = true;
     code.value = "";
     isFinal.value = false;
+    const stopDotsLoading = await startDotsLoading();
     // @ts-ignore
     window.root.innerHTML = "";
-    location.url.searchParams.delete("q");
     const response = await generate({
       description: query,
     });
@@ -102,6 +132,7 @@ export default component$(() => {
       const endIndex = text.value.lastIndexOf(endMarker);
 
       if (startIndex !== -1) {
+        stopDotsLoading();
         code.value = text.value
           .slice(
             startIndex + startMarker.length,
@@ -114,7 +145,6 @@ export default component$(() => {
     }
     prevDescription.value = query;
     await server$(async function () {
-      console.log("addProject");
       await addProject(location.params.id, {
         description: prevDescription.value,
         code: code.value,
@@ -147,6 +177,7 @@ export default component$(() => {
 
   useVisibleTask$(function () {
     window.loading = loading;
+
     if (projectInfo.value.defined) {
       return;
     }
@@ -163,22 +194,15 @@ export default component$(() => {
         >
           <input
             name="prompt"
+            value={prevDescription.value || query}
             placeholder="Edit..."
-            class=" text-black placeholder:text-neutral-400 grow shrink basis-auto my-auto focus:outline-none"
+            class="border-none text-black placeholder:text-neutral-400 grow shrink basis-auto my-auto focus:outline-none"
           />
           {loading.value ? (
-            <div class="load-3 -mt-4">
-              <div class="line"></div>
-              <div class="line"></div>
-              <div class="line"></div>
-            </div>
+            <Loading />
           ) : (
-            <button type="submit">
-              <img
-                loading="lazy"
-                srcSet="/enter-icon.svg"
-                class="aspect-square object-contain object-center w-8 overflow-hidden self-stretch shrink-0 max-w-full"
-              />
+            <button type="submit" class="border-none bg-white">
+              <EnterIcon class="aspect-square object-contain object-center w-8 overflow-hidden self-stretch shrink-0 max-w-full" />
             </button>
           )}{" "}
         </form>
@@ -233,6 +257,11 @@ export default component$(() => {
           <li class="me-2 ">
             <button
               onClick$={$(() => {
+                window.history.pushState(
+                  {},
+                  document.title,
+                  window.location.pathname
+                );
                 window.navigator.clipboard.writeText(location.url.href);
                 shareText.value = "Copied!";
                 setTimeout(() => {
@@ -268,6 +297,15 @@ export default component$(() => {
           ]}
           role="tabpanel"
         >
+          {loading.value ? (
+            <div class="bg-#00ff68 absolute z-100 w-full h-full flex justify-center items-center">
+              <div class="load-3 -mt-4">
+                <div class="line w-1rem! h-1rem!"></div>
+                <div class="line w-1rem! h-1rem!"></div>
+                <div class="line w-1rem! h-1rem!"></div>
+              </div>
+            </div>
+          ) : null}
           <div id="root" class="min-w-full  h-full"></div>
           {code.value && isFinal.value ? (
             <script
@@ -306,13 +344,13 @@ export default component$(() => {
         </div>
         <div
           class={[
-            `min-w-full min-h-full max-h-full overflow-y-auto absolute p-4 rounded-lg bg-gray-800`,
+            `border min-w-full min-h-full max-h-full overflow-y-auto absolute p-4 rounded-lg bg-black`,
             currentTab.value === "code" ? "" : "-left-1000%",
           ]}
           role="tabpanel"
         >
           <code
-            class="language-ts min-w-full min-h-5rem"
+            class="select-text language-ts min-w-full min-h-5rem"
             style={{ whiteSpace: "pre-wrap" }}
             dangerouslySetInnerHTML={
               hljs.highlight(

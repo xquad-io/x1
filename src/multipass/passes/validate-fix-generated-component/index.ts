@@ -1,10 +1,13 @@
 // @ts-nocheck
-import { validate as validate_check } from '../validate-check-generated-component/index.js';
-import { _titleCase, FRAMEWORKS_EXTENSION_MAP, loadTiktoken } from "~/utils/meta";
-import { createOpenAI } from '~/utils/openai.js';
-import type { RequestEventBase } from '@builder.io/qwik-city';
-import type { RunOptions } from '~/types.js';
-
+import { validate as validate_check } from "../validate-check-generated-component/index.js";
+import {
+  _titleCase,
+  FRAMEWORKS_EXTENSION_MAP,
+  loadTiktoken,
+} from "~/utils/meta";
+import { createOpenAI } from "~/utils/openai.js";
+import type { RequestEventBase } from "@builder.io/qwik-city";
+import type { RunOptions } from "~/types.js";
 
 /*
   returns `component-validation-fix` type , which will be picked by post processing pass
@@ -32,7 +35,7 @@ function error_badSyntax(query) {
       .split(`\n`)
       .slice(
         Math.max(0, query.error_data.error.loc.line - 3),
-        query.error_data.error.loc.line + 3,
+        query.error_data.error.loc.line + 3
       )
       .join(`\n`)
   );
@@ -52,7 +55,7 @@ function error_missingImports(query) {
           !query.error_data.component_imports
             .map((e) => e.imported)
             .flat()
-            .includes(_used_node),
+            .includes(_used_node)
       )
       .map((e) => `* ${e}`)
       .join(`\n`) +
@@ -69,7 +72,7 @@ function error_illegalImports(query) {
   const illegal_imports = query.error_data.component_imports.filter((c) =>
     Object.keys(query.error_data.component_imports_checks)
       .filter((k) => !query.error_data.component_imports_checks[k])
-      .includes(c.from),
+      .includes(c.from)
   );
 
   return (
@@ -108,8 +111,8 @@ const ERRORS_MAP = {
 };
 
 async function run(options: RunOptions, req: RequestEventBase) {
-  const openAI = createOpenAI(req)
-  const tiktokenEncoder = await loadTiktoken(req) 
+  const openAI = createOpenAI(req);
+  const tiktokenEncoder = await loadTiktoken(req);
   if (options.pipeline.stages[`component-validation-check`].success) {
     return {
       type: `component-validation-fix`,
@@ -132,7 +135,8 @@ async function run(options: RunOptions, req: RequestEventBase) {
           `---\n` +
           ERRORS_MAP[_validation_error.error]({
             error_data: _validation_error.data,
-            code: options.pipeline.stages[`component-validation-check`].data.code,
+            code: options.pipeline.stages[`component-validation-check`].data
+              .code,
           }),
       };
     });
@@ -150,23 +154,23 @@ async function run(options: RunOptions, req: RequestEventBase) {
         role: `system`,
         content:
           `You are an expert at writing ${_titleCase(
-            options.query.framework,
+            options.query.framework
           )} components and fixing ${_titleCase(
-            options.query.framework,
+            options.query.framework
           )} code with errors.\n` +
           `Your task is to fix the code of a ${_titleCase(
-            options.query.framework,
+            options.query.framework
           )} component for a web app, according to the provided detected component errors.\n` +
           `Also, the ${_titleCase(
-            options.query.framework,
+            options.query.framework
           )} component you write can make use of Tailwind classes for styling.\n` +
           `You will write the full ${_titleCase(
-            options.query.framework,
+            options.query.framework
           )} component code, which should include all imports.` +
           `The fixed code you generate will be directly written to a .${
             FRAMEWORKS_EXTENSION_MAP[options.query.framework]
           } ${_titleCase(
-            options.query.framework,
+            options.query.framework
           )} component file and used directly in production.`,
       },
       ...errors_context_entries,
@@ -174,7 +178,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
         role: `user`,
         content:
           `- Current ${_titleCase(
-            options.query.framework,
+            options.query.framework
           )} component code which has errors :\n\n` +
           "```" +
           FRAMEWORKS_EXTENSION_MAP[options.query.framework] +
@@ -182,7 +186,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
           options.pipeline.stages[`component-validation-check`].data.code +
           "\n```\n\n" +
           `Rewrite the full code to fix and update the provided ${_titleCase(
-            options.query.framework,
+            options.query.framework
           )} web component\n` +
           "The full code of the new " +
           _titleCase(options.query.framework) +
@@ -195,14 +199,18 @@ async function run(options: RunOptions, req: RequestEventBase) {
           " blocks.\n" +
           "Answer with generated code only. DO NOT ADD ANY EXTRA TEXT DESCRIPTION OR COMMENTS BESIDES THE CODE. Your answer contains code only ! component code only !\n" +
           `Important :\n` +
-          `- Make sure you import the components libraries and icons that are provided to you (if you use them) !\n` +
+          `- Make sure you import the components libraries` +
+          // and icons
+          `that are provided to you only and do not use components or imports that are not defined (if you use them) !\n` +
           `- Tailwind classes should be written directly in the elements class tags (or className in case of React). DO NOT WRITE ANY CSS OUTSIDE OF CLASSES\n` +
           `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided !\n` +
+          `- Make sure "React" keyword is always defined and imported !\n` +
+          `- Make sure you do not import any css file !\n` +
           `- Do not have ANY dynamic data! Components are meant to be working as is without supplying any variable to them when importing them ! Only write a component that render directly with placeholders as data, component not supplied with any dynamic data.\n` +
           `- Fix all errors according to the provided errors data\n` +
           `- You are allowed to remove any problematic part of the code and replace it\n` +
           `- Only write the code for the component; Do not write extra code to import it! The code will directly be stored in an individual ${_titleCase(
-            options.query.framework,
+            options.query.framework
           )} .${FRAMEWORKS_EXTENSION_MAP[options.query.framework]} file !\n\n` +
           `${
             options.query.framework != "svelte"
@@ -210,9 +218,9 @@ async function run(options: RunOptions, req: RequestEventBase) {
               : ""
           }` +
           `Fix and write the updated version of the ${_titleCase(
-            options.query.framework,
+            options.query.framework
           )} component code as the creative genius and ${_titleCase(
-            options.query.framework,
+            options.query.framework
           )} component genius you are.\n`,
       },
     ];
@@ -224,19 +232,19 @@ async function run(options: RunOptions, req: RequestEventBase) {
     });
 
     const context_prompt_tokens = tiktokenEncoder.encode(
-      context.map((e) => e.content).join(""),
+      context.map((e) => e.content).join("")
     ).length;
     console.log(
-      `> total context prompt tokens (estimate) : ${context_prompt_tokens}`,
+      `> total context prompt tokens (estimate) : ${context_prompt_tokens}`
     );
 
     let completion = "";
     const stream = await openAI.chat.completions.create({
-      model: req.env.get('OPENAI_MODEL')!,
+      model: req.env.get("OPENAI_MODEL")!,
       messages: context,
       stream: true,
     });
-    const writer = options.stream.getWriter()
+    const writer = options.stream.getWriter();
     for await (const part of stream) {
       try {
         const chunk = part.choices[0]?.delta?.content || "";
@@ -248,7 +256,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
     }
 
     writer.write(`\n`);
-    writer.releaseLock()
+    writer.releaseLock();
 
     let generated_code = ``;
     let start = false;
@@ -282,7 +290,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
           data: validate_new_code_response.data,
         },
       },
-      { depth: null },
+      { depth: null }
     );
 
     return {
@@ -299,6 +307,4 @@ async function run(options: RunOptions, req: RequestEventBase) {
   };
 }
 
-export {
-  run,
-};
+export { run };

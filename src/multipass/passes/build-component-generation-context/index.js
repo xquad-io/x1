@@ -1,6 +1,5 @@
 import { FRAMEWORKS_EXTENSION_MAP, loadTiktoken } from "~/utils/meta";
 
-
 function _titleCase(str) {
   return str.replace(/\w\S*/g, function (txt) {
     return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
@@ -8,15 +7,15 @@ function _titleCase(str) {
 }
 
 async function run(options, req) {
-const RAG = {
-  // icons: await import('./rag_icons.js'),
-  components: await import('./rag_components.js'),
-};
+  const RAG = {
+    // icons: await import('./rag_icons.js'),
+    components: await import("./rag_components.js"),
+  };
 
-  console.log('tiktoken')
-  const tiktokenEncoder =  await loadTiktoken(req)
-  console.log('tiktoken end')
-    const design_task = {
+  console.log("tiktoken");
+  const tiktokenEncoder = await loadTiktoken(req);
+  console.log("tiktoken end");
+  const design_task = {
     components: options.pipeline.stages[`component-design-task`].data.components
       ? options.pipeline.stages[`component-design-task`].data.components
       : [],
@@ -45,7 +44,7 @@ const RAG = {
   retrieved.components = retrieved.components.map((library_component, idx) => {
     let _library_component_examples = [...library_component.docs.examples];
     const _tokens_limit = parseInt(
-      req.env.get('PASS__CONTEXT__COMPONENTS_LIBRARY_EXAMPLES__TOKEN_LIMIT'),
+      req.env.get("PASS__CONTEXT__COMPONENTS_LIBRARY_EXAMPLES__TOKEN_LIMIT")
     );
     let _consumed_tokens = 0;
     let _examples = [];
@@ -56,11 +55,11 @@ const RAG = {
     ) {
       const random_component_example = _library_component_examples.splice(
         Math.floor(Math.random() * _library_component_examples.length),
-        1,
+        1
       )[0];
 
       _consumed_tokens += tiktokenEncoder.encode(
-        random_component_example.code,
+        random_component_example.code
       ).length;
 
       if (_consumed_tokens < _tokens_limit)
@@ -85,7 +84,7 @@ const RAG = {
         ? ""
         : "\n\n" +
           `# full code examples of ${_titleCase(
-            options.query.framework,
+            options.query.framework
           )} components that use ${e.name} :\n` +
           e.docs.examples
             .map((example) => {
@@ -98,8 +97,8 @@ const RAG = {
         role: `user`,
         content:
           `Library components can be used while making the new ${_titleCase(
-            options.query.framework,
-          )} component\n\n` +
+            options.query.framework
+          )} component and do not use any icons or icon library\n\n` +
           `Suggested library component (${idx + 1}/${
             retrieved.components.length
           }) : ${e.name} - ${e.description}\n` +
@@ -164,6 +163,4 @@ const RAG = {
   };
 }
 
-export {
-  run,
-};
+export { run };

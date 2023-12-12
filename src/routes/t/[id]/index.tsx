@@ -53,34 +53,42 @@ export default component$(() => {
   const isIterate = useSignal<boolean>(!!projectInfo.value.code || false);
 
   const shareText = useSignal("Share");
-  const startDotsLoading = $(() => {
+  const startDotsLoading = $((clear?: boolean) => {
     let i = 0;
+    let alreadyStopped = false;
     const prevCode = code.value;
     const loadingComment = "// loading";
     code.value = loadingComment;
     const interval = setInterval(() => {
+      if (alreadyStopped) {
+        return;
+      }
       i++;
       if (i === 4) {
         i = 0;
-        return (code.value = loadingComment);
+        code.value = loadingComment;
+        return;
       }
       code.value += ".";
     }, 300);
-    let alreadyStopped = false;
+
     return () => {
       if (alreadyStopped) {
         return;
       }
-      clearInterval(interval);
-      code.value = prevCode;
       alreadyStopped = true;
+      clearInterval(interval);
+      code.value = clear ? "" : prevCode;
     };
   });
 
   const iterateHandler = $(async (e: any) => {
+    if (loading.value) {
+      return;
+    }
     isFinal.value = false;
+
     loading.value = true;
-    const stopDotsLoading = await startDotsLoading();
     const response = await iterate({
       description: e?.target.prompt.value,
       component: {
@@ -89,6 +97,8 @@ export default component$(() => {
         name: "App",
       },
     });
+    code.value = "";
+    const stopDotsLoading = await startDotsLoading(true);
 
     for await (const value of response) {
       text.value += value;
@@ -116,9 +126,11 @@ export default component$(() => {
     isFinal.value = true;
   });
   const generateHandler = $(async () => {
+    if (loading.value) {
+      return;
+    }
     // removeing $ from this function would cause error, should be reported to qwikjs
     loading.value = true;
-    code.value = "";
     isFinal.value = false;
     const stopDotsLoading = await startDotsLoading();
     // @ts-ignore
@@ -296,6 +308,7 @@ export default component$(() => {
           class={[
             `min-w-full min-h-full max-h-full overflow-y-auto absolute rounded-lg bg-gray-50 dark:bg-gray-800`,
             currentTab.value === "result" ? "" : "-left-1000%",
+            loading.value ? "overflow-hidden" : "",
           ]}
           role="tabpanel"
         >
@@ -315,6 +328,7 @@ export default component$(() => {
               dangerouslySetInnerHTML={`
             import build from "https://esm.sh/build";
             import * as React from 'react'  
+            import { NextUIProvider } from '@nextui-org/react'
             import { createRoot } from 'react-dom/client'
 
             try {
@@ -325,13 +339,12 @@ export default component$(() => {
                   "@nextui-org/react": "^2.2.4",
                   "framer-motion": "^10.16.2"
                 },
-                code: \`
-                  ${code.value}
-                \`,
+                code: ${JSON.stringify(code.value)}
+                ,
               });
               const { default: App } = await import(ret.url)
 
-              createRoot(window.root).render(React.createElement(App, {}))
+              createRoot(window.root).render(React.createElement(NextUIProvider, null, React.createElement(App, {})))
             } catch (e) {
               console.log(e)
               window.root.innerHTML = e?.toString() + '\\n' + e?.stack

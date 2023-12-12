@@ -17,6 +17,7 @@ export const generate = server$(async function* ({
             description: description,
             framework: "react",
             components: "nextui",
+            icons: "lucide",
           },
         },
         this
@@ -61,6 +62,7 @@ export const iterate = server$(async function* ({
             component,
             framework: "react",
             components: "nextui",
+            icons: "lucide",
           },
         },
         this

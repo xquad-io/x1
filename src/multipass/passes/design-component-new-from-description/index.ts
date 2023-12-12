@@ -15,13 +15,14 @@ async function run(options: RunOptions, req: RequestEventBase) {
       role: `system`,
       content:
         `Your task is to design a new ${options.query.framework} component for a web app, according to the user's request.\n` +
-        `If you judge it is relevant to do so, you can specify pre-made library components to use in the task.\n` +
-        `You can also specify the use of icons if you see that the user's request requires it.`,
+        `If you judge it is relevant to do so, you can specify pre-made library components to use in the task.\n`,
+      // +
+      // `You can also specify the use of icons if you see that the user's request requires it.`,
     },
     {
       role: `user`,
       content:
-        "Multiple library components can be used while creating a new component in order to help you do a better design job, faster.\n\nAVAILABLE LIBRARY COMPONENTS:\n```\n" +
+        "Multiple library components can be used while creating a new component in order to help you do a better design job, faster, please only use these components and html elements, nothing else.\n\nAVAILABLE LIBRARY COMPONENTS:\n```\n" +
         LIBRARY_COMPONENTS_MAP[options.query.framework][
           options.query.components
         ]
@@ -71,7 +72,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
     ...{
       new_component_name: false,
       new_component_description: false,
-      new_component_icons_elements: false,
+      // new_component_icons_elements: false,
       use_library_components: false,
     },
     ...JSON.parse(`${completion}`),
@@ -83,20 +84,20 @@ async function run(options: RunOptions, req: RequestEventBase) {
       user: options.query.description,
       llm: component_design.new_component_description,
     },
-    icons: !component_design.new_component_icons_elements
-      ? false
-      : !(
-          component_design.new_component_icons_elements
-            .does_new_component_need_icons_elements &&
-          component_design.new_component_icons_elements
-            .if_so_what_new_component_icons_elements_are_needed &&
-          component_design.new_component_icons_elements
-            .if_so_what_new_component_icons_elements_are_needed.length
-        )
-      ? false
-      : component_design.new_component_icons_elements.if_so_what_new_component_icons_elements_are_needed.map(
-          (e) => e.toLowerCase()
-        ),
+    // icons: !component_design.new_component_icons_elements
+    //   ? false
+    //   : !(
+    //       component_design.new_component_icons_elements
+    //         .does_new_component_need_icons_elements &&
+    //       component_design.new_component_icons_elements
+    //         .if_so_what_new_component_icons_elements_are_needed &&
+    //       component_design.new_component_icons_elements
+    //         .if_so_what_new_component_icons_elements_are_needed.length
+    //     )
+    //   ? false
+    //   : component_design.new_component_icons_elements.if_so_what_new_component_icons_elements_are_needed.map(
+    //       (e) => e.toLowerCase()
+    //     ),
     components: !component_design.use_library_components
       ? false
       : component_design.use_library_components.map((e) => {

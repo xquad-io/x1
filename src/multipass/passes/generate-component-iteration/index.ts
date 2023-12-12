@@ -1,13 +1,17 @@
 // @ts-nocheck
-import { _titleCase, FRAMEWORKS_EXTENSION_MAP, loadTiktoken } from "~/utils/meta";
+import {
+  _titleCase,
+  FRAMEWORKS_EXTENSION_MAP,
+  loadTiktoken,
+} from "~/utils/meta";
 import { createOpenAI } from "~/utils/openai";
 import type { ChatCompletionMessageParam } from "openai/resources";
 import type { RequestEventBase } from "@builder.io/qwik-city";
 import type { RunOptions } from "~/types";
 
 async function run(options: RunOptions, req: RequestEventBase) {
-  const openAI = createOpenAI(req)
-  const tiktokenEncoder = await loadTiktoken(req)
+  const openAI = createOpenAI(req);
+  const tiktokenEncoder = await loadTiktoken(req);
 
   const design_task = options.pipeline.stages["component-design-task"].data;
   const context: ChatCompletionMessageParam[] = [
@@ -15,22 +19,24 @@ async function run(options: RunOptions, req: RequestEventBase) {
       role: `system`,
       content:
         `You are an expert at writing ${_titleCase(
-          options.query.framework,
+          options.query.framework
         )} components.\n` +
         `Your task is to write a new update for the provided ${_titleCase(
-          options.query.framework,
+          options.query.framework
         )} component for a web app, according to the provided task details.\n` +
         `The ${_titleCase(
-          options.query.framework,
+          options.query.framework
         )} component you write can make use of Tailwind classes for styling.\n` +
-        `If you judge it is relevant to do so, you can use library components and icons.\n\n` +
+        `If you judge it is relevant to do so, you can use library components` +
+        //  and icons
+        `.\n\n` +
         `You will write the full ${_titleCase(
-          options.query.framework,
+          options.query.framework
         )} component code, which should include all imports.` +
         `Your generated code will be directly written to a .${
           FRAMEWORKS_EXTENSION_MAP[options.query.framework]
         } ${_titleCase(
-          options.query.framework,
+          options.query.framework
         )} component file and used in production.`,
     },
     ...options.pipeline.stages[`component-design-context`].data,
@@ -57,7 +63,9 @@ async function run(options: RunOptions, req: RequestEventBase) {
         "```\n" +
         design_task.description.llm +
         "\n```\n\n\n" +
-        `Write the full code for the new, updated ${options.query.framework} web component, which uses Tailwind classes if needed (add tailwind dark: classes too if you can; backgrounds in dark: classes should be black), and optionally, library components and icons, based on the provided design task.\n` +
+        `Write the full code for the new, updated ${options.query.framework} web component, which uses Tailwind classes if needed (add tailwind dark: classes too if you can; backgrounds in dark: classes should be black), and optionally, library components and ` +
+        // icons
+        `, based on the provided design task.\n` +
         "The full code of the new " +
         _titleCase(options.query.framework) +
         " component that you write will be written directly to a ." +
@@ -69,12 +77,15 @@ async function run(options: RunOptions, req: RequestEventBase) {
         " blocks.\n" +
         "Answer with generated code only. DO NOT ADD ANY EXTRA TEXT DESCRIPTION OR COMMENTS BESIDES THE CODE. Your answer contains code only ! component code only !\n" +
         `Important :\n` +
-        `- Make sure you import provided components libraries and icons that are provided to you if you use them !\n` +
+        `- Make sure you import provided components libraries` +
+        // and icons
+        ` that are provided to you if you use them !\n` +
         `- Tailwind classes should be written directly in the elements class tags (or className in case of React). DO NOT WRITE ANY CSS OUTSIDE OF CLASSES\n` +
-        `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided above !\n` +
+        `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided above (react and nextui) !\n` +
+        `- Make sure you include the previous generated code !\n` +
         `- Do not have ANY dynamic data! Components are meant to be working as is without supplying any variable to them when importing them ! Only write a component that render directly with placeholders as data, component not supplied with any dynamic data.\n` +
         `- Only write the code for the component; Do not write extra code to import it! The code will directly be stored in an individual ${_titleCase(
-          options.query.framework,
+          options.query.framework
         )} .${FRAMEWORKS_EXTENSION_MAP[options.query.framework]} file !\n` +
         `${
           options.query.framework != "svelte"
@@ -82,9 +93,9 @@ async function run(options: RunOptions, req: RequestEventBase) {
             : ""
         }` +
         `Write the updated version of the ${_titleCase(
-          options.query.framework,
+          options.query.framework
         )} component code as the creative genius and ${_titleCase(
-          options.query.framework,
+          options.query.framework
         )} component genius you are - with good ui formatting.\n`,
     },
   ];
@@ -96,20 +107,20 @@ async function run(options: RunOptions, req: RequestEventBase) {
   });
 
   const context_prompt_tokens = tiktokenEncoder.encode(
-    context.map((e) => e.content).join(""),
+    context.map((e) => e.content).join("")
   ).length;
   console.log(
-    `> total context prompt tokens (estimate) : ${context_prompt_tokens}`,
+    `> total context prompt tokens (estimate) : ${context_prompt_tokens}`
   );
 
   let completion = "";
   const stream = await openAI.chat.completions.create({
-    model: req.env.get('OPENAI_MODEL')!,
+    model: req.env.get("OPENAI_MODEL")!,
     messages: context,
     stream: true,
   });
 
-  const writer = options.stream.getWriter()
+  const writer = options.stream.getWriter();
   for await (const part of stream) {
     try {
       const chunk = part.choices[0]?.delta?.content || "";
@@ -121,7 +132,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
   }
 
   writer.write(`\n`);
-  writer.releaseLock()
+  writer.releaseLock();
 
   let generated_code = ``;
   let start = false;
@@ -147,6 +158,4 @@ async function run(options: RunOptions, req: RequestEventBase) {
   };
 }
 
-export {
-  run,
-};
+export { run };

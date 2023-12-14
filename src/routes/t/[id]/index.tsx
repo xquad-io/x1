@@ -46,7 +46,7 @@ export const useGetProjectInfo = routeLoader$(async (req) => {
 export const head: DocumentHead = ({ resolveValue, params }) => {
   const projectInfo = resolveValue(useGetProjectInfo);
   return {
-    title: `${projectInfo.description} | X1`,
+    title: projectInfo.description ? `${projectInfo.description} | X1` : "X1",
     meta: [
       {
         name: "description",

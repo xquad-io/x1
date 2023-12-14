@@ -2,6 +2,7 @@ import type { Signal } from "@builder.io/qwik";
 import {
   $,
   component$,
+  useComputed$,
   useSignal,
   useStyles$,
   useTask$,
@@ -82,6 +83,14 @@ export default component$(() => {
   const isIterate = useSignal<boolean>(!!projectInfo.value.code || false);
 
   const shareText = useSignal("Share");
+  const highlightedCode = useComputed$(
+    () =>
+      hljs.highlight(
+        code.value,
+
+        { language: "tsx" }
+      ).value
+  );
   const startDotsLoading = $((clear?: boolean) => {
     clear;
     let i = 0;
@@ -137,6 +146,7 @@ export default component$(() => {
     prevDescription.value = value;
     // code.value = "";
 
+    text.value = "";
     for await (const value of response) {
       text.value += value;
 
@@ -229,7 +239,9 @@ export default component$(() => {
   useVisibleTask$(function () {
     window.loading = loading;
 
-    window.history.pushState({}, document.title, window.location.pathname);
+    queueMicrotask(() =>
+      window.history.pushState({}, document.title, window.location.pathname)
+    );
     if (projectInfo.value.defined) {
       return;
     }
@@ -239,10 +251,12 @@ export default component$(() => {
   return (
     <main class="clip-pa font-sora w-full h-full max-w-[1263px] px-5">
       <Preloads />
-      <h2 class="text-1xl font-italic">
-        <span class="font-bold">{">"}</span>{" "}
-        {projectInfo.value.description || query}
-      </h2>
+      {projectInfo.value.description || query ? (
+        <h2 class="text-1xl font-italic">
+          <span class="font-bold">{">"}</span>{" "}
+          {projectInfo.value.description || query}
+        </h2>
+      ) : null}
       {projectInfo.value.isAuthor || !projectInfo.value.defined ? (
         <form
           preventdefault:submit
@@ -405,13 +419,7 @@ export default component$(() => {
           <code
             class="select-text language-ts min-w-full min-h-5rem"
             style={{ whiteSpace: "pre-wrap" }}
-            dangerouslySetInnerHTML={
-              hljs.highlight(
-                code.value,
-
-                { language: "tsx" }
-              ).value
-            }
+            dangerouslySetInnerHTML={highlightedCode.value}
           ></code>
         </div>
       </div>

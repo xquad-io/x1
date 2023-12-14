@@ -7,12 +7,8 @@ import {
   useTask$,
   useVisibleTask$,
 } from "@builder.io/qwik";
-import {
-  DocumentHead,
-  routeLoader$,
-  server$,
-  useLocation,
-} from "@builder.io/qwik-city";
+import type { DocumentHead } from "@builder.io/qwik-city";
+import { routeLoader$, server$, useLocation } from "@builder.io/qwik-city";
 // import "highlight.js/styles/dark.min.css";
 import hljs from "highlight.js";
 import tsx from "highlight.js/lib/languages/typescript";
@@ -87,9 +83,10 @@ export default component$(() => {
 
   const shareText = useSignal("Share");
   const startDotsLoading = $((clear?: boolean) => {
+    clear;
     let i = 0;
     let alreadyStopped = false;
-    const prevCode = code.value;
+    // const prevCode = code.value;
     const loadingComment = "// loading";
     code.value = loadingComment;
     const interval = setInterval(() => {
@@ -111,7 +108,8 @@ export default component$(() => {
       }
       alreadyStopped = true;
       clearInterval(interval);
-      code.value = clear ? "" : prevCode;
+      code.value = "";
+      // code.value = clear ? "" : prevCode;
     };
   });
 
@@ -126,6 +124,7 @@ export default component$(() => {
     const prevCode = code.value;
     const prevDesc = prevDescription.value;
     prevDescription.value = value;
+    code.value = "";
     const stopDotsLoading = await startDotsLoading(true);
     const response = await iterate({
       description: value,
@@ -242,7 +241,7 @@ export default component$(() => {
       <Preloads />
       <h2 class="text-1xl font-italic">
         <span class="font-bold">{">"}</span>{" "}
-        {projectInfo.value.description ?? query}
+        {projectInfo.value.description || query}
       </h2>
       {projectInfo.value.isAuthor || !projectInfo.value.defined ? (
         <form

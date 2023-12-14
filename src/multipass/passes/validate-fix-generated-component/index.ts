@@ -204,8 +204,9 @@ async function run(options: RunOptions, req: RequestEventBase) {
           `that are provided to you only and do not use components or imports that are not defined (if you use them) !\n` +
           `- Tailwind classes should be written directly in the elements class tags (or className in case of React). DO NOT WRITE ANY CSS OUTSIDE OF CLASSES\n` +
           `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided !\n` +
-          `- Make sure "React" keyword is always defined and imported !\n` +
+          `- Make sure React keyword is always imported as default !\n` +
           `- Make sure you do not import any css file !\n` +
+          `- Make sure to not use any component that is not imported !\n` +
           `- Do not have ANY dynamic data! Components are meant to be working as is without supplying any variable to them when importing them ! Only write a component that render directly with placeholders as data, component not supplied with any dynamic data.\n` +
           `- Fix all errors according to the provided errors data\n` +
           `- You are allowed to remove any problematic part of the code and replace it\n` +

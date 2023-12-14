@@ -12,6 +12,7 @@ export function setKV(ns: KVNamespace) {
 
 type Project = {
   description: string;
+  lastUpdate: string;
   code: string;
   author: string;
 };
@@ -28,13 +29,18 @@ export async function addProject(key: string, project: Project) {
   return namespace.put(key, JSON.stringify(project));
 }
 
-export async function updateProject(key: string, code: string) {
+export async function updateProject(
+  key: string,
+  description: string,
+  code: string
+) {
   const project = await namespace.get(key);
   if (project === null) {
     return null;
   }
   const parsed = JSON.parse(project) as Project;
   parsed.code = code;
+  parsed.lastUpdate = description;
   return namespace.put(key, JSON.stringify(parsed));
 }
 

@@ -39,7 +39,7 @@ export default component$(() => {
         <Slot />
       </div>
       <div class="absolute w-full h-full bg-black"></div>
-      <div class="h-full w-full fixed z-0 overflow-hidden top-0 left-0 opacity-60 md:opacity-90">
+      <div class="h-full w-full fixed z-0 overflow-hidden top-0 left-0 opacity-60">
         <div class="absolute top-0 left-0 z-1 w-full h-full shadow-[0px_0px_200px_3vw_black_inset]" />
         <QParticlesBgCanvas client:idle />
       </div>

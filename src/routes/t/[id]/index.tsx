@@ -7,7 +7,12 @@ import {
   useTask$,
   useVisibleTask$,
 } from "@builder.io/qwik";
-import { routeLoader$, server$, useLocation } from "@builder.io/qwik-city";
+import {
+  DocumentHead,
+  routeLoader$,
+  server$,
+  useLocation,
+} from "@builder.io/qwik-city";
 // import "highlight.js/styles/dark.min.css";
 import hljs from "highlight.js";
 import tsx from "highlight.js/lib/languages/typescript";
@@ -38,6 +43,30 @@ export const useGetProjectInfo = routeLoader$(async (req) => {
   };
 });
 
+export const head: DocumentHead = ({ resolveValue, params }) => {
+  const projectInfo = resolveValue(useGetProjectInfo);
+  return {
+    title: `${projectInfo.description} | X1`,
+    meta: [
+      {
+        name: "description",
+        content: projectInfo.description,
+      },
+      {
+        property: "og:title",
+        content: `${projectInfo.description} | X1`,
+      },
+      {
+        property: "og:description",
+        content: projectInfo.description,
+      },
+      {
+        name: "id",
+        content: params.id,
+      },
+    ],
+  };
+};
 export default component$(() => {
   useStyles$(darkMin);
   const location = useLocation();
@@ -46,7 +75,11 @@ export default component$(() => {
 
   const projectInfo = useGetProjectInfo();
   const text = useSignal("");
-  const prevDescription = useSignal(projectInfo.value.description ?? "");
+  const prevDescription = useSignal(
+    projectInfo.value.isAuthor
+      ? projectInfo.value.lastUpdate
+      : projectInfo.value.description
+  );
   const code = useSignal(projectInfo.value.code ?? "");
   const isFinal = useSignal(!!projectInfo.value.code || false);
   const loading = useSignal(false);
@@ -83,22 +116,27 @@ export default component$(() => {
   });
 
   const iterateHandler = $(async (e: any) => {
+    const value = e?.target.prompt.value;
     if (loading.value) {
       return;
     }
     isFinal.value = false;
 
     loading.value = true;
+    const prevCode = code.value;
+    const prevDesc = prevDescription.value;
+    prevDescription.value = value;
+    const stopDotsLoading = await startDotsLoading(true);
     const response = await iterate({
-      description: e?.target.prompt.value,
+      description: value,
       component: {
-        description: prevDescription.value,
-        code: code.value,
+        description: prevDesc ?? "",
+        code: prevCode,
         name: "App",
       },
     });
-    code.value = "";
-    const stopDotsLoading = await startDotsLoading(true);
+    prevDescription.value = value;
+    // code.value = "";
 
     for await (const value of response) {
       text.value += value;
@@ -120,7 +158,7 @@ export default component$(() => {
     }
 
     await server$(async function () {
-      await updateProject(location.params.id, code.value);
+      await updateProject(location.params.id, value, code.value);
     })();
     loading.value = true;
     isFinal.value = true;
@@ -159,7 +197,8 @@ export default component$(() => {
     prevDescription.value = query;
     await server$(async function () {
       await addProject(location.params.id, {
-        description: prevDescription.value,
+        description: prevDescription.value!,
+        lastUpdate: prevDescription.value!,
         code: code.value,
         author: this.cookie.get("uuid")!.value,
       });
@@ -191,6 +230,7 @@ export default component$(() => {
   useVisibleTask$(function () {
     window.loading = loading;
 
+    window.history.pushState({}, document.title, window.location.pathname);
     if (projectInfo.value.defined) {
       return;
     }
@@ -200,6 +240,10 @@ export default component$(() => {
   return (
     <main class="clip-pa font-sora w-full h-full max-w-[1263px] px-5">
       <Preloads />
+      <h2 class="text-1xl font-italic">
+        <span class="font-bold">{">"}</span>{" "}
+        {projectInfo.value.description ?? query}
+      </h2>
       {projectInfo.value.isAuthor || !projectInfo.value.defined ? (
         <form
           preventdefault:submit
@@ -271,11 +315,6 @@ export default component$(() => {
           <li class="me-2 ">
             <button
               onClick$={$(() => {
-                window.history.pushState(
-                  {},
-                  document.title,
-                  window.location.pathname
-                );
                 window.navigator.clipboard.writeText(location.url.href);
                 shareText.value = "Copied!";
                 setTimeout(() => {

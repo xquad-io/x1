@@ -1,5 +1,10 @@
 import { component$, useComputed$, useSignal } from "@builder.io/qwik";
-import { Link, useLocation, useNavigate } from "@builder.io/qwik-city";
+import {
+  DocumentHead,
+  Link,
+  useLocation,
+  useNavigate,
+} from "@builder.io/qwik-city";
 import Loading from "~/components/Loading";
 import EnterIcon from "~/media/icons/enter.png?jsx";
 
@@ -8,6 +13,31 @@ import EnterIcon from "~/media/icons/enter.png?jsx";
 //     throw req.redirect(302, "/t/" + crypto.randomUUID());
 //   }
 // };
+export const head: DocumentHead = {
+  // This will be used to resolve the <title> of the page
+  title: "X1 | By XQuad",
+  meta: [
+    {
+      name: "description",
+      content: "The Open-Source Frontend Development Assistant",
+    },
+    // Open graph
+    {
+      property: "og:title",
+      content: "X1 | By XQuad",
+    },
+    {
+      property: "og:description",
+      content: "The Open-Source Frontend Development Assistant",
+    },
+  ],
+  links: [
+    {
+      rel: "canonical",
+      href: "https://xquad.io",
+    },
+  ],
+};
 
 export default component$(() => {
   const nav = useNavigate();
@@ -19,8 +49,8 @@ export default component$(() => {
   return (
     <main class="font-sora min-h-70% w-full relative flex justify-center items-center">
       <div class="flex grow flex-col items-stretch max-md:max-w-full">
-        <h1 class="text-white text-3xl font-semibold self-center whitespace-nowrap max-md:max-w-full">
-          Your new frontend assistant
+        <h1 class="text-white text-3xl font-semibold self-center text-center max-md:max-w-full">
+          The Open-Source Frontend Development Assistant
         </h1>
         <form
           preventdefault:submit

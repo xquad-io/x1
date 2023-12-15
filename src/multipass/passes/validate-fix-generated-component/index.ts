@@ -117,6 +117,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
     "component-validation-check",
     options.pipeline.stages[`component-validation-check`].success
   );
+  console.log(options.pipeline);
   // if (options.pipeline.stages[`component-validation-check`].success) {
   //   return {
   //     type: `component-validation-fix`,
@@ -182,7 +183,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
       content:
         `- Current ${_titleCase(
           options.query.framework
-        )} component code which has errors :\n\n` +
+        )} component code which may has errors :\n\n` +
         "```" +
         FRAMEWORKS_EXTENSION_MAP[options.query.framework] +
         "\n" +
@@ -209,6 +210,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
         `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided !\n` +
         `- only import 'react' and '@nextui-org/react' packages   !\n` +
         `- Make sure to not change code so much !\n` +
+        `- Make sure to import only what was imported before  !\n` +
         `- Make sure React keyword is always imported as default !\n` +
         `- Make sure you do not import any css file !\n` +
         `- Make sure to not use any component that is not imported !\n` +

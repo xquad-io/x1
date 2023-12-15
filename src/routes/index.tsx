@@ -67,7 +67,7 @@ export default component$(() => {
               (promptQuery.value = encodeURIComponent(e.target.value))
             }
             name="prompt"
-            placeholder="A dashboard with a sidebar..."
+            placeholder="A Hello-World Application..."
             class="border-none text-black placeholder:text-neutral-400 text-lg grow shrink basis-auto my-auto focus:outline-none"
           />
           {/* for prefetching */}

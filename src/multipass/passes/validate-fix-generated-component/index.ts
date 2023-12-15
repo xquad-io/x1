@@ -113,193 +113,198 @@ const ERRORS_MAP = {
 async function run(options: RunOptions, req: RequestEventBase) {
   const openAI = createOpenAI(req);
   const tiktokenEncoder = await loadTiktoken(req);
-  if (options.pipeline.stages[`component-validation-check`].success) {
+  console.log(
+    "component-validation-check",
+    options.pipeline.stages[`component-validation-check`].success
+  );
+  // if (options.pipeline.stages[`component-validation-check`].success) {
+  //   return {
+  //     type: `component-validation-fix`,
+  //     success: true,
+  //     data: options.pipeline.stages[`component-validation-check`].data,
+  //   };
+  // } else {
+  // try to fix code by prompting
+
+  const errors_context_entries = options.pipeline.stages[
+    `component-validation-check`
+  ].data.validation_errors.map((_validation_error, _error_idx) => {
     return {
-      type: `component-validation-fix`,
-      success: true,
-      data: options.pipeline.stages[`component-validation-check`].data,
+      role: `user`,
+      content:
+        `# Component Error (${_error_idx + 1}/${
+          options.pipeline.stages[`component-validation-check`].data
+            .validation_errors.length
+        })\n` +
+        `---\n` +
+        ERRORS_MAP[_validation_error.error]({
+          error_data: _validation_error.data,
+          code: options.pipeline.stages[`component-validation-check`].data.code,
+        }),
     };
-  } else {
-    // try to fix code by prompting
+  });
 
-    const errors_context_entries = options.pipeline.stages[
-      `component-validation-check`
-    ].data.validation_errors.map((_validation_error, _error_idx) => {
-      return {
-        role: `user`,
-        content:
-          `# Component Error (${_error_idx + 1}/${
-            options.pipeline.stages[`component-validation-check`].data
-              .validation_errors.length
-          })\n` +
-          `---\n` +
-          ERRORS_MAP[_validation_error.error]({
-            error_data: _validation_error.data,
-            code: options.pipeline.stages[`component-validation-check`].data
-              .code,
-          }),
-      };
-    });
+  // req.pipeline.stages[`component-validation-check`].data.code
 
-    // req.pipeline.stages[`component-validation-check`].data.code
-
-    /*
+  /*
     console.dir({
       debug__validate_fix_generated_component : errors_context_entries
     },{depth:null})
     */
 
-    const context = [
-      {
-        role: `system`,
-        content:
-          `You are an expert at writing ${_titleCase(
-            options.query.framework
-          )} components and fixing ${_titleCase(
-            options.query.framework
-          )} code with errors.\n` +
-          `Your task is to fix the code of a ${_titleCase(
-            options.query.framework
-          )} component for a web app, according to the provided detected component errors.\n` +
-          `Also, the ${_titleCase(
-            options.query.framework
-          )} component you write can make use of Tailwind classes for styling.\n` +
-          `You will write the full ${_titleCase(
-            options.query.framework
-          )} component code, which should include all imports.` +
-          `The fixed code you generate will be directly written to a .${
-            FRAMEWORKS_EXTENSION_MAP[options.query.framework]
-          } ${_titleCase(
-            options.query.framework
-          )} component file and used directly in production.`,
-      },
-      ...errors_context_entries,
-      {
-        role: `user`,
-        content:
-          `- Current ${_titleCase(
-            options.query.framework
-          )} component code which has errors :\n\n` +
-          "```" +
-          FRAMEWORKS_EXTENSION_MAP[options.query.framework] +
-          "\n" +
-          options.pipeline.stages[`component-validation-check`].data.code +
-          "\n```\n\n" +
-          `Rewrite the full code to fix and update the provided ${_titleCase(
-            options.query.framework
-          )} web component\n` +
-          "The full code of the new " +
-          _titleCase(options.query.framework) +
-          " component that you write will be written directly to a ." +
-          FRAMEWORKS_EXTENSION_MAP[options.query.framework] +
-          " file inside the " +
-          _titleCase(options.query.framework) +
-          " project. Make sure all necessary imports are done, and that your full code is enclosed with ```" +
-          FRAMEWORKS_EXTENSION_MAP[options.query.framework] +
-          " blocks.\n" +
-          "Answer with generated code only. DO NOT ADD ANY EXTRA TEXT DESCRIPTION OR COMMENTS BESIDES THE CODE. Your answer contains code only ! component code only !\n" +
-          `Important :\n` +
-          `- Make sure you import the components libraries` +
-          // and icons
-          `that are provided to you only and do not use components or imports that are not defined (if you use them) !\n` +
-          `- Tailwind classes should be written directly in the elements class tags (or className in case of React). DO NOT WRITE ANY CSS OUTSIDE OF CLASSES\n` +
-          `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided !\n` +
-          `- Make sure React keyword is always imported as default !\n` +
-          `- Make sure you do not import any css file !\n` +
-          `- Make sure to not use any component that is not imported !\n` +
-          `- Do not have ANY dynamic data! Components are meant to be working as is without supplying any variable to them when importing them ! Only write a component that render directly with placeholders as data, component not supplied with any dynamic data.\n` +
-          `- Fix all errors according to the provided errors data\n` +
-          `- You are allowed to remove any problematic part of the code and replace it\n` +
-          `- Only write the code for the component; Do not write extra code to import it! The code will directly be stored in an individual ${_titleCase(
-            options.query.framework
-          )} .${FRAMEWORKS_EXTENSION_MAP[options.query.framework]} file !\n\n` +
-          `${
-            options.query.framework != "svelte"
-              ? "- Very important : Your component should be exported as default !\n"
-              : ""
-          }` +
-          `Fix and write the updated version of the ${_titleCase(
-            options.query.framework
-          )} component code as the creative genius and ${_titleCase(
-            options.query.framework
-          )} component genius you are.\n`,
-      },
-    ];
+  const context = [
+    {
+      role: `system`,
+      content:
+        `You are an expert at writing ${_titleCase(
+          options.query.framework
+        )} components and fixing ${_titleCase(
+          options.query.framework
+        )} code with errors.\n` +
+        `Your task is to fix the code of a ${_titleCase(
+          options.query.framework
+        )} component for a web app, according to the provided detected component errors.\n` +
+        `Also, the ${_titleCase(
+          options.query.framework
+        )} component you write can make use of Tailwind classes for styling.\n` +
+        `You will write the full ${_titleCase(
+          options.query.framework
+        )} component code, which should include all imports.` +
+        `The fixed code you generate will be directly written to a .${
+          FRAMEWORKS_EXTENSION_MAP[options.query.framework]
+        } ${_titleCase(
+          options.query.framework
+        )} component file and used directly in production.`,
+    },
+    ...errors_context_entries,
+    {
+      role: `user`,
+      content:
+        `- Current ${_titleCase(
+          options.query.framework
+        )} component code which has errors :\n\n` +
+        "```" +
+        FRAMEWORKS_EXTENSION_MAP[options.query.framework] +
+        "\n" +
+        options.pipeline.stages[`component-validation-check`].data.code +
+        "\n```\n\n" +
+        `Rewrite the full code to fix and update the provided ${_titleCase(
+          options.query.framework
+        )} web component\n` +
+        "The full code of the new " +
+        _titleCase(options.query.framework) +
+        " component that you write will be written directly to a ." +
+        FRAMEWORKS_EXTENSION_MAP[options.query.framework] +
+        " file inside the " +
+        _titleCase(options.query.framework) +
+        " project. Make sure all necessary imports are done, and that your full code is enclosed with ```" +
+        FRAMEWORKS_EXTENSION_MAP[options.query.framework] +
+        " blocks.\n" +
+        "Answer with generated code only. DO NOT ADD ANY EXTRA TEXT DESCRIPTION OR COMMENTS BESIDES THE CODE. Your answer contains code only ! component code only !\n" +
+        `Important :\n` +
+        `- Make sure you import the components libraries` +
+        // and icons
+        `that are provided to you only and do not use components or imports that are not defined (if you use them) !\n` +
+        `- Tailwind classes should be written directly in the elements class tags (or className in case of React). DO NOT WRITE ANY CSS OUTSIDE OF CLASSES\n` +
+        `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided !\n` +
+        `- only import 'react' and '@nextui-org/react' packages   !\n` +
+        `- Make sure to not change code so much !\n` +
+        `- Make sure React keyword is always imported as default !\n` +
+        `- Make sure you do not import any css file !\n` +
+        `- Make sure to not use any component that is not imported !\n` +
+        `- Do not have ANY dynamic data! Components are meant to be working as is without supplying any variable to them when importing them ! Only write a component that render directly with placeholders as data, component not supplied with any dynamic data.\n` +
+        `- Fix all errors according to the provided errors data\n` +
+        `- You are allowed to remove any problematic part of the code and replace it\n` +
+        `- Only write the code for the component; Do not write extra code to import it! The code will directly be stored in an individual ${_titleCase(
+          options.query.framework
+        )} .${FRAMEWORKS_EXTENSION_MAP[options.query.framework]} file !\n\n` +
+        `${
+          options.query.framework != "svelte"
+            ? "- Very important : Your component should be exported as default !\n"
+            : ""
+        }` +
+        `Fix and write the updated version of the ${_titleCase(
+          options.query.framework
+        )} component code as the creative genius and ${_titleCase(
+          options.query.framework
+        )} component genius you are.\n`,
+    },
+  ];
 
-    console.dir({
-      context: context.map((e) => {
-        return { role: e.role, content: e.content.slice(0, 200) + " ..." };
-      }),
-    });
+  console.dir({
+    context: context.map((e) => {
+      return { role: e.role, content: e.content.slice(0, 200) + " ..." };
+    }),
+  });
 
-    const context_prompt_tokens = tiktokenEncoder.encode(
-      context.map((e) => e.content).join("")
-    ).length;
-    console.log(
-      `> total context prompt tokens (estimate) : ${context_prompt_tokens}`
-    );
+  const context_prompt_tokens = tiktokenEncoder.encode(
+    context.map((e) => e.content).join("")
+  ).length;
+  console.log(
+    `> total context prompt tokens (estimate) : ${context_prompt_tokens}`
+  );
 
-    let completion = "";
-    const stream = await openAI.chat.completions.create({
-      model: req.env.get("OPENAI_MODEL")!,
-      messages: context,
-      stream: true,
-    });
-    const writer = options.stream.getWriter();
-    for await (const part of stream) {
-      try {
-        const chunk = part.choices[0]?.delta?.content || "";
-        completion += chunk;
-        writer.write(chunk);
-      } catch (e) {
-        false;
-      }
+  let completion = "";
+  const stream = await openAI.chat.completions.create({
+    model: req.env.get("OPENAI_MODEL")!,
+    messages: context,
+    stream: true,
+  });
+  const writer = options.stream.getWriter();
+  for await (const part of stream) {
+    try {
+      const chunk = part.choices[0]?.delta?.content || "";
+      completion += chunk;
+      writer.write(chunk);
+    } catch (e) {
+      false;
     }
-
-    writer.write(`\n`);
-    writer.releaseLock();
-
-    let generated_code = ``;
-    let start = false;
-    for (const l of completion.split("\n")) {
-      let skip = false;
-      if (
-        [
-          "```",
-          ...Object.values(FRAMEWORKS_EXTENSION_MAP).map((e) => "```" + e),
-        ].includes(l.toLowerCase().trim())
-      ) {
-        start = !start;
-        skip = true;
-      }
-      if (start && !skip) generated_code += `${l}\n`;
-    }
-    generated_code = generated_code.trim();
-
-    const validate_new_code_response = await validate_check({
-      // framework: options.query.framework,
-      // components: options.query.components,
-      // icons: options.query.icons,
-      code: generated_code,
-    });
-
-    console.dir(
-      {
-        debug__validate_fix__validate_new_code: {
-          type: `component-validation-fix`,
-          success: validate_new_code_response.success,
-          data: validate_new_code_response.data,
-        },
-      },
-      { depth: null }
-    );
-
-    return {
-      type: `component-validation-fix`,
-      success: validate_new_code_response.success,
-      data: validate_new_code_response.data,
-    };
   }
+
+  writer.write(`\n`);
+  writer.releaseLock();
+
+  let generated_code = ``;
+  let start = false;
+  for (const l of completion.split("\n")) {
+    let skip = false;
+    if (
+      [
+        "```",
+        ...Object.values(FRAMEWORKS_EXTENSION_MAP).map((e) => "```" + e),
+      ].includes(l.toLowerCase().trim())
+    ) {
+      start = !start;
+      skip = true;
+    }
+    if (start && !skip) generated_code += `${l}\n`;
+  }
+  generated_code = generated_code.trim();
+
+  const validate_new_code_response = await validate_check({
+    // framework: options.query.framework,
+    // components: options.query.components,
+    // icons: options.query.icons,
+    code: generated_code,
+  });
+
+  console.dir(
+    {
+      debug__validate_fix__validate_new_code: {
+        type: `component-validation-fix`,
+        success: validate_new_code_response.success,
+        data: validate_new_code_response.data,
+      },
+    },
+    { depth: null }
+  );
+
+  return {
+    type: `component-validation-fix`,
+    success: validate_new_code_response.success,
+    data: validate_new_code_response.data,
+  };
+  // }
 
   return {
     type: `component-validation-fix`,

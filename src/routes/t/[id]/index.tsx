@@ -128,6 +128,9 @@ export default component$(() => {
 
   const iterateHandler = $(async (e: any) => {
     const value = e?.target.prompt.value;
+    if (!projectInfo.value.isAuthor) {
+      return;
+    }
     if (loading.value) {
       return;
     }

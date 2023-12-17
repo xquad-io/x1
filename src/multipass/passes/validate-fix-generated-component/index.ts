@@ -210,6 +210,8 @@ async function run(options: RunOptions, req: RequestEventBase) {
         `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided !\n` +
         `- only import 'react' and '@nextui-org/react' packages   !\n` +
         `- Make sure to not change code so much !\n` +
+        `- Make sure to not use tree-shaking !\n` +
+        `- Make sure to not use any hooks other than the react core hooks !\n` +
         `- Make sure to import only what was imported before  !\n` +
         `- Make sure React keyword is always imported as default !\n` +
         `- Make sure to not use any local specifier or local import !\n` +

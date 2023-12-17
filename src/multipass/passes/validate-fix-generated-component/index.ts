@@ -212,6 +212,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
         `- Make sure to not change code so much !\n` +
         `- Make sure to import only what was imported before  !\n` +
         `- Make sure React keyword is always imported as default !\n` +
+        `- Make sure to not use any local specifier or local import !\n` +
         `- Make sure you do not import any css file !\n` +
         `- Make sure to not use any component that is not imported !\n` +
         `- Do not have ANY dynamic data! Components are meant to be working as is without supplying any variable to them when importing them ! Only write a component that render directly with placeholders as data, component not supplied with any dynamic data.\n` +

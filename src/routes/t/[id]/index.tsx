@@ -29,6 +29,7 @@ const endMarker = "```";
 declare global {
   interface Window {
     loading: Signal<boolean>;
+    error: Signal<string>;
   }
 }
 export const useGetProjectInfo = routeLoader$(async (req) => {
@@ -79,8 +80,11 @@ export default component$(() => {
   );
   const code = useSignal(projectInfo.value.code ?? "");
   const isFinal = useSignal(!!projectInfo.value.code || false);
+
   const loading = useSignal(false);
+  const error = useSignal("");
   const isIterate = useSignal<boolean>(!!projectInfo.value.code || false);
+  const codeDivRef = useSignal<Element>();
 
   const shareText = useSignal("Share");
   const highlightedCode = useComputed$(
@@ -238,6 +242,7 @@ export default component$(() => {
 
   useVisibleTask$(function () {
     window.loading = loading;
+    window.error = error;
 
     queueMicrotask(() =>
       window.history.pushState({}, document.title, window.location.pathname)
@@ -246,6 +251,21 @@ export default component$(() => {
       return;
     }
     generateHandler();
+  });
+
+  useVisibleTask$(({ track }) => {
+    track(code);
+
+    codeDivRef.value!.scrollTop = codeDivRef.value!.scrollHeight;
+  });
+  useTask$(async ({ track }) => {
+    track(error);
+    if (error.value) {
+      const description = prevDescription.value;
+      await iterateHandler({ target: { prompt: { value: error.value } } });
+      error.value = "";
+      prevDescription.value = description;
+    }
   });
 
   return (
@@ -384,6 +404,21 @@ export default component$(() => {
             import { createRoot } from 'react-dom/client'
 
             try {
+              class ErrorBoundary extends React.Component {
+                constructor(props) {
+                  super(props);
+                }
+              
+                // if an error happened, set the state to true
+                static getDerivedStateFromError(err) {
+                  error.value += err  
+                }
+              
+                render() {
+                  return this.props.children;
+                }
+              }
+
               const ret = await build({
                 dependencies: {
                   "react": "18.2.0",
@@ -392,26 +427,25 @@ export default component$(() => {
                   "framer-motion": "^10.16.2"
                 },
                 code: ${JSON.stringify(code.value)}
-                ,
               });
               const { default: App } = await import(ret.url)
 
-              createRoot(window.root).render(React.createElement(NextUIProvider, null, React.createElement(App, {})))
+              createRoot(window.root).render(React.createElement(ErrorBoundary, null, React.createElement(NextUIProvider, null, React.createElement(App, {}))) )
             } catch (e) {
               console.log(e)
+              error.value += e
               window.root.innerHTML = e?.toString() + '\\n' + e?.stack
             } finally {
               window.loading.value = false
             }
-            
-
           `}
             />
           ) : null}
         </div>
         <div
+          ref={(ref) => (codeDivRef.value = ref)}
           class={[
-            `border min-w-full min-h-full max-h-full overflow-y-auto absolute p-4 rounded-lg bg-black`,
+            `border min-w-full min-h-full max-h-full scroll-smooth overflow-y-auto absolute p-4 rounded-lg bg-black`,
             currentTab.value === "code" ? "" : "-left-1000%",
           ]}
           role="tabpanel"

@@ -175,6 +175,7 @@ export default component$(() => {
     })();
     loading.value = true;
     isFinal.value = true;
+    console.log("things are final", isFinal.value);
   });
   const generateHandler = $(async () => {
     if (loading.value) {
@@ -258,12 +259,19 @@ export default component$(() => {
 
     codeDivRef.value!.scrollTop = codeDivRef.value!.scrollHeight;
   });
-  useTask$(async ({ track }) => {
+  useVisibleTask$(async ({ track }) => {
     track(error);
     if (error.value) {
+      console.log("error value", error.value);
       const description = prevDescription.value;
-      await iterateHandler({ target: { prompt: { value: error.value } } });
+      const errorMessage = "The code gives this error" + error.value;
       error.value = "";
+      loading.value = false;
+      await iterateHandler({
+        target: {
+          prompt: { value: errorMessage },
+        },
+      });
       prevDescription.value = description;
     }
   });
@@ -430,6 +438,7 @@ export default component$(() => {
               });
               const { default: App } = await import(ret.url)
 
+              console.log('here', App)
               createRoot(window.root).render(React.createElement(ErrorBoundary, null, React.createElement(NextUIProvider, null, React.createElement(App, {}))) )
             } catch (e) {
               console.log(e)

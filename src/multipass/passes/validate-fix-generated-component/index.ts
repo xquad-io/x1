@@ -211,7 +211,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
         `- only import 'react' and '@nextui-org/react' packages   !\n` +
         `- Make sure to not change code so much !\n` +
         `- Make sure to not use tree-shaking !\n` +
-        `- Make sure to not use any hooks other than the react core hooks !\n` +
+        `- Make sure to not use any hooks other than the hooks that are exported from the 'react' module !\n` +
         `- Make sure to import only what was imported before  !\n` +
         `- Make sure React keyword is always imported as default !\n` +
         `- Make sure to not use any local specifier or local import !\n` +

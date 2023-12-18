@@ -9,7 +9,12 @@ import {
   useVisibleTask$,
 } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
-import { routeLoader$, server$, useLocation } from "@builder.io/qwik-city";
+import {
+  routeLoader$,
+  server$,
+  useLocation,
+  useNavigate,
+} from "@builder.io/qwik-city";
 // import "highlight.js/styles/dark.min.css";
 import hljs from "highlight.js";
 import tsx from "highlight.js/lib/languages/typescript";
@@ -68,6 +73,7 @@ export const head: DocumentHead = ({ resolveValue, params }) => {
 export default component$(() => {
   useStyles$(darkMin);
   const location = useLocation();
+  const nav = useNavigate();
   const query = location.url.searchParams.get("q")!;
   const currentTab = useSignal<"result" | "code">("result");
 
@@ -127,6 +133,7 @@ export default component$(() => {
   });
 
   const iterateHandler = $(async (e: any) => {
+    // console.log("here");
     const value = e?.target.prompt.value;
     if (!projectInfo.value.isAuthor) {
       return;
@@ -220,6 +227,7 @@ export default component$(() => {
 
     isFinal.value = true;
     isIterate.value = true;
+    await nav();
   });
 
   const forkHandler = $(async () => {
@@ -436,7 +444,9 @@ export default component$(() => {
               });
               const { default: App } = await import(ret.url + '?dev')
 
-              createRoot(window.root).render(React.createElement(ErrorBoundary, null, React.createElement(App, {})) )
+              globalThis.rootRender = globalThis.rootRender || createRoot(window.root)
+
+              globalThis.rootRender.render(React.createElement(ErrorBoundary, null, React.createElement(App, {})) )
             } catch (e) {
               error.value += e
               window.root.innerHTML = e?.toString() + '\\n' + e?.stack

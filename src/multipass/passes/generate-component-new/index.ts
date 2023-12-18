@@ -71,6 +71,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
         // `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided above (react and nextui) !\n` +
         `- DO NOT HAVE ANY DYNAMIC DATA OR DATA PROPS ! Components are meant to be working as is without supplying any variable to them when importing them ! Only write a component that render directly with placeholders as data, component not supplied with any dynamic data.\n` +
         `- DO NOT HAVE ANY DYNAMIC DATA OR DATA PROPS ! ` +
+        `- DO NOT IMPORT ANY LOCAL MODULE or LOCAL SPECIFIER ! ` +
         `- Only write the code for the component; Do not write extra code to import it! The code will directly be stored in an individual ${_titleCase(
           options.query.framework
         )} .${FRAMEWORKS_EXTENSION_MAP[options.query.framework]} file !\n` +

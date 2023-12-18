@@ -165,9 +165,7 @@ export default component$(() => {
         code.value = text.value
           .slice(
             startIndex + startMarker.length,
-            endIndex === -1 || endIndex === startIndex
-              ? text.value.length - 1
-              : endIndex
+            endIndex <= startIndex ? text.value.length - 1 : endIndex
           )
           .trim();
       }
@@ -178,7 +176,6 @@ export default component$(() => {
     })();
     loading.value = true;
     isFinal.value = true;
-    console.log("things are final", isFinal.value);
   });
   const generateHandler = $(async () => {
     if (loading.value) {
@@ -265,7 +262,6 @@ export default component$(() => {
   useVisibleTask$(async ({ track }) => {
     track(error);
     if (error.value) {
-      console.log("error value", error.value);
       const description = prevDescription.value;
       const errorMessage = "The code gives this error" + error.value;
       error.value = "";
@@ -411,7 +407,6 @@ export default component$(() => {
               dangerouslySetInnerHTML={`
             import build from "https://esm.sh/build";
             import * as React from 'react'  
-            import { NextUIProvider } from '@nextui-org/react'
             import { createRoot } from 'react-dom/client'
 
             try {
@@ -434,17 +429,15 @@ export default component$(() => {
                 dependencies: {
                   "react": "18.2.0",
                   // "react-dom": "18.2.0",
-                  "@nextui-org/react": "^2.2.4",
-                  "framer-motion": "^10.16.2"
+                  // "@nextui-org/react": "^2.2.4",
+                  // "framer-motion": "^10.16.2"
                 },
                 code: ${JSON.stringify(code.value)}
               });
-              const { default: App } = await import(ret.url)
+              const { default: App } = await import(ret.url + '?dev')
 
-              console.log('here', App)
-              createRoot(window.root).render(React.createElement(ErrorBoundary, null, React.createElement(NextUIProvider, null, React.createElement(App, {}))) )
+              createRoot(window.root).render(React.createElement(ErrorBoundary, null, React.createElement(App, {})) )
             } catch (e) {
-              console.log(e)
               error.value += e
               window.root.innerHTML = e?.toString() + '\\n' + e?.stack
             } finally {

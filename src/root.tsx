@@ -30,10 +30,8 @@ export default component$(() => {
           dangerouslySetInnerHTML={`
   {
     "imports": {
-      "react": "https://esm.sh/react@18.2.0",
-      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-      "@nextui-org/react": "https://esm.sh/@nextui-org/react@^2.2.4",
-      "framer-motion": "https://esm.sh/framer-motion@^10.16.2"
+      "react": "https://esm.sh/react@18.2.0?dev",
+      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client?dev"
     }
   }
 `}

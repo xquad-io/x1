@@ -39,7 +39,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
           options.query.framework
         )} component file and used in production.`,
     },
-    ...options.pipeline.stages[`component-design-context`].data,
+    // ...options.pipeline.stages[`component-design-context`].data,
     {
       role: `user`,
       content:
@@ -77,11 +77,11 @@ async function run(options: RunOptions, req: RequestEventBase) {
         " blocks.\n" +
         "Answer with generated code only. DO NOT ADD ANY EXTRA TEXT DESCRIPTION OR COMMENTS BESIDES THE CODE. Your answer contains code only ! component code only !\n" +
         `Important :\n` +
-        `- Make sure you import provided components libraries` +
+        // `- Make sure you import provided components libraries` +
         // and icons
-        ` that are provided to you if you use them !\n` +
+        // ` that are provided to you if you use them !\n` +
         `- Tailwind classes should be written directly in the elements class tags (or className in case of React). DO NOT WRITE ANY CSS OUTSIDE OF CLASSES\n` +
-        `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided above (react and nextui) !\n` +
+        // `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided above (react and nextui) !\n` +
         `- Make sure you include the previous generated code !\n` +
         `- Do not have ANY dynamic data! Components are meant to be working as is without supplying any variable to them when importing them ! Only write a component that render directly with placeholders as data, component not supplied with any dynamic data.\n` +
         `- Only write the code for the component; Do not write extra code to import it! The code will directly be stored in an individual ${_titleCase(

@@ -227,7 +227,7 @@ export default component$(() => {
 
     isFinal.value = true;
     isIterate.value = true;
-    await nav();
+    await nav(undefined, { forceReload: true });
   });
 
   const forkHandler = $(async () => {

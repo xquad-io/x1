@@ -42,7 +42,7 @@ export const useGetProjectInfo = routeLoader$(async (req) => {
   return {
     ...project,
     defined: !!project,
-    isAuthor: req.cookie.get("uuid")!.value === project?.author,
+    isAuthor: !project || req.cookie.get("uuid")!.value === project.author,
   };
 });
 
@@ -253,8 +253,10 @@ export default component$(() => {
     window.loading = loading;
     window.error = error;
 
-    queueMicrotask(() =>
-      window.history.pushState({}, document.title, window.location.pathname)
+    setTimeout(
+      () =>
+        window.history.pushState({}, document.title, window.location.pathname),
+      3000
     );
     if (projectInfo.value.defined) {
       return;

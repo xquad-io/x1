@@ -253,11 +253,6 @@ export default component$(() => {
     window.loading = loading;
     window.error = error;
 
-    setTimeout(
-      () =>
-        window.history.pushState({}, document.title, window.location.pathname),
-      3000
-    );
     if (projectInfo.value.defined) {
       return;
     }

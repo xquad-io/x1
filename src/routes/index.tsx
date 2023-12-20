@@ -7,6 +7,9 @@ import {
 } from "@builder.io/qwik-city";
 import Loading from "~/components/Loading";
 import EnterIcon from "~/media/icons/enter.png?jsx";
+import MinimalBlogScreenshot from "~/media/screenshots/minimal-blog.png?jsx";
+import BeautifulDashboardScreenshot from "~/media/screenshots/beautiful-dashboard.png?jsx";
+import DashboardWithSidebarScreenshot from "~/media/screenshots/dashboard-with-sidebar.jpg?jsx";
 
 // export const onGet: RequestHandler = async (req) => {
 //   if (req.url.pathname === "/") {
@@ -83,30 +86,39 @@ export default component$(() => {
           )}
         </form>
         <div class="mt-4rem max-md:max-w-full max-md:mt-10">
-          <div class="gap-5 flex max-md:flex-col flex-wrap justify-center max-md:items-stretch max-md:gap-0">
-            <div class="flex flex-col items-stretch w-[33%] max-md:w-full max-md:ml-0">
-              <div class="border bg-black flex grow flex-col items-stretch w-full px-4 py-4 border-solid border-slate-800">
+          <div class="gap-5 flex max-md:flex-col flex-wrap justify-center items-center">
+            <div class="flex flex-col items-stretch w-278px max-md:ml-0">
+              <a
+                href="/t/a9d6ae45-43bf-4cf3-977c-4716f47565c5/"
+                class="border bg-black flex grow flex-col items-stretch w-full px-4 py-4 border-solid border-slate-800"
+              >
                 <div class="text-white text-base font-semibold whitespace-nowrap">
-                  A list of top customers
+                  minimal blog
                 </div>
-                <div class="bg-zinc-300 flex shrink-0 h-[133px] flex-col mt-3"></div>
-              </div>
+                <MinimalBlogScreenshot class="aspect-16/9 flex shrink-0 h-[133px] flex-col mt-3"></MinimalBlogScreenshot>
+              </a>
             </div>
-            <div class="flex flex-col items-stretch w-[33%] max-md:w-full max-md:ml-0">
-              <div class="border bg-black flex grow flex-col items-stretch w-full px-4 py-4 border-solid border-slate-800">
+            <div class="flex flex-col items-stretch w-278px  max-md:ml-0">
+              <a
+                href="/t/e87d00b3-17cb-4ccd-b7db-6b6436690ec1/"
+                class="border bg-black flex grow flex-col items-stretch w-full px-4 py-4 border-solid border-slate-800"
+              >
                 <div class="text-white text-base font-semibold whitespace-nowrap">
-                  A list of top customers
+                  create a simple dashboard
                 </div>
-                <div class="bg-zinc-300 flex shrink-0 h-[133px] flex-col mt-3"></div>
-              </div>
+                <BeautifulDashboardScreenshot class="aspect-16/9 bg-zinc-300 flex shrink-0 h-[133px] flex-col mt-3"></BeautifulDashboardScreenshot>
+              </a>
             </div>
-            <div class="flex flex-col items-stretch w-[33%] max-md:w-full max-md:ml-0">
-              <div class="border bg-black flex grow flex-col items-stretch w-full px-4 py-4 border-solid border-slate-800">
+            <div class="flex flex-col items-stretch w-278px  max-md:ml-0">
+              <a
+                href="/t/23d0e0ea-05ff-4fba-8055-0600d5a9af57/"
+                class="border bg-black flex grow flex-col items-stretch w-full px-4 py-4 border-solid border-slate-800"
+              >
                 <div class="text-white text-base font-semibold whitespace-nowrap">
-                  A list of top customers
+                  Dashboard with sidebar
                 </div>
-                <div class="bg-zinc-300 flex shrink-0 h-[133px] flex-col mt-3"></div>
-              </div>
+                <DashboardWithSidebarScreenshot class="aspect-16/9 bg-zinc-300 flex shrink-0 h-[133px] flex-col mt-3"></DashboardWithSidebarScreenshot>
+              </a>
             </div>
           </div>
         </div>

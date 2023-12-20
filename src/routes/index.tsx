@@ -48,7 +48,9 @@ export default component$(() => {
   const uuid = crypto.randomUUID();
 
   const promptQuery = useSignal("");
-  const url = useComputed$(() => `/t/${uuid}/?q=${promptQuery.value}`);
+  const url = useComputed$(
+    () => `/t/${uuid}/?q=${encodeURIComponent(promptQuery.value)}`
+  );
   return (
     <main class="font-sora min-h-70% w-full relative flex justify-center items-center">
       <div class="flex grow flex-col items-stretch max-md:max-w-full">

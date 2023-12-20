@@ -31,6 +31,8 @@ pnpm i
 pnpm dev # or pnpm build
 ```
 
+You need some help deploying X1? Let's schedule a call [here](https://calendly.com/xquadio/30min).
+
 ## Upcoming
 
 - Open in Stackblitz/Codepen

@@ -74,7 +74,7 @@ export default component$(() => {
   useStyles$(darkMin);
   const location = useLocation();
   const nav = useNavigate();
-  const query = location.url.searchParams.get("q")!;
+  const query = decodeURIComponent(location.url.searchParams.get("q")!);
   const currentTab = useSignal<"result" | "code">("result");
 
   const projectInfo = useGetProjectInfo();

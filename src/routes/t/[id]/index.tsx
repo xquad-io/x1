@@ -401,7 +401,7 @@ export default component$(() => {
       <div class="relative min-w-full h-70%">
         <div
           class={[
-            `min-w-full min-h-full max-h-full overflow-y-auto absolute rounded-lg bg-gray-50 dark:bg-gray-800`,
+            `min-w-full max-w-full min-h-full max-h-full overflow-y-auto absolute rounded-lg bg-gray-50 dark:bg-gray-800`,
             currentTab.value === "result" ? "" : "-left-1000%",
             loading.value ? "overflow-hidden" : "",
           ]}

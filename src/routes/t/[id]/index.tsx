@@ -18,8 +18,10 @@ import {
 // import "highlight.js/styles/dark.min.css";
 import hljs from "highlight.js";
 import tsx from "highlight.js/lib/languages/typescript";
+import sdk from '@stackblitz/sdk'
 import { generate, iterate } from "~/services";
 import { addProject, forkProject, getProject, updateProject } from "~/utils/kv";
+import {openProjectInNewTab} from '~/utils/stackblitz'
 import "~/entry.ssr";
 import Loading from "~/components/Loading";
 import EnterIcon from "~/media/icons/enter.png?jsx";
@@ -268,7 +270,7 @@ export default component$(() => {
     track(error);
     if (error.value) {
       const description = prevDescription.value;
-      const errorMessage = "The code gives this error" + error.value;
+      const errorMessage = `The code bundler and runtime gives this error: "${error.value}", please fix it`;
       error.value = "";
       loading.value = false;
       await iterateHandler({
@@ -358,6 +360,15 @@ export default component$(() => {
         </ul>
         <ul class="flex flex-wrap items-center -mb-px text-sm font-medium text-center">
           <li class="me-2 ">
+          <button
+              onClick$={$(() => {
+                openProjectInNewTab(location.params.id, code.value)
+              })}
+              disabled={loading.value}
+              class="p-4 disabled:opacity-60%"
+            >
+              Stackblitz
+            </button>
             <button
               onClick$={$(() => {
                 window.navigator.clipboard.writeText(location.url.href);
@@ -405,7 +416,7 @@ export default component$(() => {
               </div>
             </div>
           ) : null}
-          <div id="root" class="min-w-full  h-full"></div>
+          <div id="root" class="min-w-full max-w-full h-full"></div>
           {code.value && isFinal.value ? (
             <script
               type="module"
@@ -429,8 +440,7 @@ export default component$(() => {
                   return this.props.children;
                 }
               }
-
-              const ret = await build({
+              const body = JSON.stringify({
                 dependencies: {
                   "react": "18.2.0",
                   // "react-dom": "18.2.0",
@@ -438,7 +448,20 @@ export default component$(() => {
                   // "framer-motion": "^10.16.2"
                 },
                 code: ${JSON.stringify(code.value)}
-              });
+              })
+              const res = await fetch("https://esm.sh/build", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body,
+              })
+
+              const ret = await res.json();
+              console.log(ret)
+              if (ret.error) {
+                throw new Error(
+                  JSON.stringify(ret.error.message)
+                );
+              }
               const { default: App } = await import(ret.url + '?dev')
 
               globalThis.rootRender = globalThis.rootRender || createRoot(window.root)

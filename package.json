@@ -65,6 +65,7 @@
   "dependencies": {
     "@dqbd/tiktoken": "^1.0.7",
     "@react-three/fiber": "^8.15.12",
+    "@stackblitz/sdk": "^1.9.0",
     "@types/prismjs": "^1.26.3",
     "@vespaiach/axios-fetch-adapter": "^0.3.1",
     "@webcontainer/api": "^1.1.8",

@@ -18,7 +18,6 @@ import {
 // import "highlight.js/styles/dark.min.css";
 import hljs from "highlight.js";
 import tsx from "highlight.js/lib/languages/typescript";
-import sdk from '@stackblitz/sdk'
 import { generate, iterate } from "~/services";
 import { addProject, forkProject, getProject, updateProject } from "~/utils/kv";
 import {openProjectInNewTab} from '~/utils/stackblitz'

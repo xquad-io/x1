@@ -16,23 +16,20 @@ async function run(options: RunOptions, req: RequestEventBase) {
     {
       role: `system`,
       content:
-        `You are an expert at writing ${_titleCase(
-          options.query.framework
-        )} components.\n` +
+        `
+        You are an expert React/Tailwind developer`
+        +
         `Your task is to write a new ${_titleCase(
           options.query.framework
         )} component for a web app, according to the provided task details.\n` +
         `The ${_titleCase(
           options.query.framework
         )} component you write can make use of Tailwind classes for styling.\n` +
-        `If you judge it is relevant to do so, you can use library components` +
-        //  and icons
-        `.\n\n` +
++
         `You will write the full ${_titleCase(
           options.query.framework
         )} component code, which should include all imports.` +
-        `Your generated code will be directly written to a .${
-          FRAMEWORKS_EXTENSION_MAP[options.query.framework]
+        `Your generated code will be directly written to a .${FRAMEWORKS_EXTENSION_MAP[options.query.framework]
         } ${_titleCase(
           options.query.framework
         )} component file and used in production.`,
@@ -69,16 +66,22 @@ async function run(options: RunOptions, req: RequestEventBase) {
         `that are provided to you if you use them !\n` +
         `- Tailwind classes should be written directly in the elements class tags (or className in case of React). DO NOT WRITE ANY CSS OUTSIDE OF CLASSES. DO NOT USE ANY <style> IN THE CODE ! CLASSES STYLING ONLY !\n` +
         // `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided above (react and nextui) !\n` +
-        `- DO NOT HAVE ANY DYNAMIC DATA OR DATA PROPS ! Components are meant to be working as is without supplying any variable to them when importing them ! Only write a component that render directly with placeholders as data, component not supplied with any dynamic data.\n` +
-        `- DO NOT HAVE ANY DYNAMIC DATA OR DATA PROPS ! ` +
-        `- DO NOT IMPORT ANY LOCAL MODULE or LOCAL SPECIFIER ! ` +
-        `- Only write the code for the component; Do not write extra code to import it! The code will directly be stored in an individual ${_titleCase(
-          options.query.framework
-        )} .${FRAMEWORKS_EXTENSION_MAP[options.query.framework]} file !\n` +
-        `${
-          options.query.framework != "svelte"
-            ? "- Very important : Your component should be exported as default !\n"
-            : ""
+        `
+- Do not add comments in the code such as "<!-- Add other navigation links as needed -->" and "<!-- ... other news items ... -->" in place of writing the full code. WRITE THE FULL CODE.
+- Repeat elements as needed. For example, if there are 15 items, the code should have 15 items. DO NOT LEAVE comments like "<!-- Repeat for each news item -->" or bad things will happen.
+- For images, use placeholder images from https://placehold.co and include a detailed description of the image in the alt text so that an image generation AI can generate the image later.
+
+In terms of libraries,
+- Do not use any other library
+- You can use Google Fonts
+- Font Awesome for icons: <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
+        ` +
+          `- Only write the code for the component; Do not write extra code to import it! The code will directly be stored in an individual ${_titleCase(
+            options.query.framework
+          )} .${FRAMEWORKS_EXTENSION_MAP[options.query.framework]} file !\n` +
+        `${options.query.framework != "svelte"
+          ? "- Very important : Your component should be exported as default !\n"
+          : ""
         }` +
         `Write the ${_titleCase(
           options.query.framework

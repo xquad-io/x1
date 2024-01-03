@@ -2,6 +2,7 @@ import { component$ } from "@builder.io/qwik";
 
 export default component$(() => (
   <>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
     <script type="module" src="https://esm.sh/run" async></script>
     <script
       type="module"

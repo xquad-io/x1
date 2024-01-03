@@ -86,12 +86,11 @@ function error_illegalImports(query) {
       .map((e, idx) => {
         const suffix = e.imported.filter((e) => e != `default`).length
           ? `\n  * was used to import elements : ${e.imported
-              .filter((e) => e != "default")
-              .join(" , ")}`
+            .filter((e) => e != "default")
+            .join(" , ")}`
           : "";
         return (
-          `* non-allowed import (${idx + 1}/${illegal_imports.length}) : ${
-            e.from
+          `* non-allowed import (${idx + 1}/${illegal_imports.length}) : ${e.from
           }` + suffix
         );
       })
@@ -133,9 +132,8 @@ async function run(options: RunOptions, req: RequestEventBase) {
     return {
       role: `user`,
       content:
-        `# Component Error (${_error_idx + 1}/${
-          options.pipeline.stages[`component-validation-check`].data
-            .validation_errors.length
+        `# Component Error (${_error_idx + 1}/${options.pipeline.stages[`component-validation-check`].data
+          .validation_errors.length
         })\n` +
         `---\n` +
         ERRORS_MAP[_validation_error.error]({
@@ -171,8 +169,7 @@ async function run(options: RunOptions, req: RequestEventBase) {
         `You will write the full ${_titleCase(
           options.query.framework
         )} component code, which should include all imports.` +
-        `The fixed code you generate will be directly written to a .${
-          FRAMEWORKS_EXTENSION_MAP[options.query.framework]
+        `The fixed code you generate will be directly written to a .${FRAMEWORKS_EXTENSION_MAP[options.query.framework]
         } ${_titleCase(
           options.query.framework
         )} component file and used directly in production.`,
@@ -206,29 +203,42 @@ async function run(options: RunOptions, req: RequestEventBase) {
         // `- Make sure you import the components libraries` +
         // and icons
         // `that are provided to you only and do not use components or imports that are not defined (if you use them) !\n` +
-        `- Tailwind classes should be written directly in the elements class tags (or className in case of React). DO NOT WRITE ANY CSS OUTSIDE OF CLASSES\n` +
-        `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided !\n` +
-        `- only import 'react' package   !\n` +
-        `- Make sure to not change code so much !\n` +
-        `- Make sure to not use tree-shaking !\n` +
-        `- Make sure to not use any hooks other than the hooks that are exported from the 'react' module !\n` +
-        `- Make sure to import only what was imported before  !\n` +
-        `- Make sure React keyword is always imported as default !\n` +
-        `- Make sure to not use any local specifier or local import !\n` +
-        `- Make sure to build any component from scratch yourself !\n` +
-        `- Make sure you do not import any css file !\n` +
-        `- Make sure to not use any component that is not imported !\n` +
-        `- Do not have ANY dynamic data! Components are meant to be working as is without supplying any variable to them when importing them ! Only write a component that render directly with placeholders as data, component not supplied with any dynamic data.\n` +
-        `- Fix all errors according to the provided errors data\n` +
-        `- You are allowed to remove any problematic part of the code and replace it\n` +
-        `- Only write the code for the component; Do not write extra code to import it! The code will directly be stored in an individual ${_titleCase(
-          options.query.framework
-        )} .${FRAMEWORKS_EXTENSION_MAP[options.query.framework]} file !\n\n` +
-        `${
-          options.query.framework != "svelte"
-            ? "- Very important : Your component should be exported as default !\n"
-            : ""
-        }` +
+        `
+- Do not add comments in the code such as "<!-- Add other navigation links as needed -->" and "<!-- ... other news items ... -->" in place of writing the full code. WRITE THE FULL CODE.
+- Repeat elements as needed. For example, if there are 15 items, the code should have 15 items. DO NOT LEAVE comments like "<!-- Repeat for each news item -->" or bad things will happen.
+- For images, use placeholder images from https://placehold.co and include a detailed description of the image in the alt text so that an image generation AI can generate the image later.
+
+In terms of libraries,
+- Do not use any other library
+- You can use Google Fonts
+- Font Awesome for icons: <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
+          
+        \n` +
+
+        //   `- Tailwind classes should be written directly in the elements class tags (or className in case of React). DO NOT WRITE ANY CSS OUTSIDE OF CLASSES\n` +
+        // `- Do not use libraries or imports except what is provided in this task; otherwise it would crash the component because not installed. Do not import extra libraries besides what is provided !\n` +
+        // `- only import 'react' package   !\n` +
+        // `- Make sure to not change code so much !\n` +
+        // `- Make sure to not use tree-shaking !\n` +
+        // `- Make sure to not use any hooks other than the hooks that are exported from the 'react' module !\n` +
+        // `- Make sure to import only what was imported before  !\n` +
+        // `- Make sure React keyword is always imported as default !\n` +
+        // `- Make sure to not use any local specifier or local import !\n` +
+        // `- Make sure to build any component from scratch yourself !\n` +
+        // `- Make sure you do not import any css file !\n` +
+        // `- Make sure to not use any component that is not imported !\n` +
+        // `- Do not have ANY dynamic data! Components are meant to be working as is without supplying any variable to them when importing them ! Only write a component that render directly with placeholders as data, component not supplied with any dynamic data.\n` +
+        // `- Fix all errors according to the provided errors data\n` +
+        // `- You are allowed to remove any problematic part of the code and replace it\n` +
+        // `- Only write the code for the component; Do not write extra code to import it! The code will directly be stored in an individual ${_titleCase(
+
+
+        //   options.query.framework
+        // )} .${FRAMEWORKS_EXTENSION_MAP[options.query.framework]} file !\n\n` +
+        // `${options.query.framework != "svelte"
+        //   ? "- Very important : Your component should be exported as default !\n"
+        //   : ""
+        // }` +
         `Fix and write the updated version of the ${_titleCase(
           options.query.framework
         )} component code as the creative genius and ${_titleCase(

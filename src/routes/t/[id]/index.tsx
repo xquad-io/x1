@@ -463,7 +463,8 @@ export default component$(() => {
               }
               const { default: App } = await import(ret.url + '?dev')
 
-              globalThis.rootRender = globalThis.rootRender || createRoot(window.root)
+              await globalThis.rootRender?.unmount()
+              globalThis.rootRender = createRoot(window.root)
 
               globalThis.rootRender.render(React.createElement(ErrorBoundary, null, React.createElement(App, {})) )
             } catch (e) {
